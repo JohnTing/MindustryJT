@@ -45,6 +45,7 @@ public class ChatFragment extends Table{
         font = Fonts.def;
 
         visible(() -> {
+            /*
             if(!net.active() && messages.size > 0){
                 clearMessages();
 
@@ -53,7 +54,8 @@ public class ChatFragment extends Table{
                 }
             }
 
-            return net.active() && ui.hudfrag.shown;
+            return net.active() && ui.hudfrag.shown;*/
+            return ui.hudfrag.shown;
         });
 
         update(() -> {

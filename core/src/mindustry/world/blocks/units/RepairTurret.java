@@ -9,6 +9,7 @@ import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
+import mindustry.core.Renderer;
 import mindustry.entities.*;
 import mindustry.game.*;
 import mindustry.gen.*;
@@ -48,7 +49,7 @@ public class RepairTurret extends Block{
     public @Load("laser-top") TextureRegion laserTop;
     public @Load("laser-top-end") TextureRegion laserTopEnd;
 
-    public Color laserColor = Color.valueOf("98ffa9"), laserTopColor = Color.white.cpy();
+    public Color laserColor = Color.valueOf("98ffa9").a(0.2f), laserTopColor = Color.white.cpy().a(0.2f);
 
     public RepairTurret(String name){
         super(name);

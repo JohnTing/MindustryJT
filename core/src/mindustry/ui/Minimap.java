@@ -11,7 +11,7 @@ import mindustry.gen.*;
 import static mindustry.Vars.*;
 
 public class Minimap extends Table{
-
+    public float size = 140f;
     public Minimap(){
         background(Tex.pane);
         float margin = 5f;
@@ -19,7 +19,7 @@ public class Minimap extends Table{
 
         add(new Element(){
             {
-                setSize(Scl.scl(140f));
+                setSize(Scl.scl(size));
             }
 
             @Override
@@ -43,7 +43,7 @@ public class Minimap extends Table{
 
                 clipEnd();
             }
-        }).size(140f);
+        }).size(size);
 
         margin(margin);
 
