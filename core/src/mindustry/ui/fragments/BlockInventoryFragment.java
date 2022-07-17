@@ -14,6 +14,7 @@ import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.content.Blocks;
 import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -222,8 +223,10 @@ public class BlockInventoryFragment{
         f = (int)f;
         if(f >= 1000000){
             return (int)(f / 1000000f) + "[gray]" + UI.millions;
-        }else if(f >= 1000){
+        }else if(f >= 10000){
             return (int)(f / 1000) + UI.thousands;
+        }else if(f >= 1000){
+            return String.format("%.1f%s", (int)(f/100)*0.1f, Core.bundle.getOrNull("unit.thousands"));
         }else{
             return (int)f + "";
         }
@@ -232,7 +235,12 @@ public class BlockInventoryFragment{
     private void updateTablePosition(){
         Vec2 v = Core.input.mouseScreen(build.x + build.block.size * tilesize / 2f, build.y + build.block.size * tilesize / 2f);
         table.pack();
-        table.setPosition(v.x, v.y, Align.topLeft);
+        if (build.block == Blocks.itemBridge) {
+            v.add(5f, 5f);
+            table.setPosition(v.x, v.y, Align.bottomLeft);
+        } else {
+            table.setPosition(v.x, v.y, Align.topLeft);
+        }
     }
 
     private Element itemImage(TextureRegion region, Prov<CharSequence> text){

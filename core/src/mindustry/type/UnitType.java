@@ -480,7 +480,12 @@ public class UnitType extends UnlockableContent{
         table.table(t -> {
             t.left();
             t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
-            t.labelWrap(localizedName).left().width(190f).padLeft(5);
+            t.labelWrap(String.format("%s (%d/%d)", localizedName, unit.team.data().countType(unit.type), Units.getCap(unit.team))).left().width(190f).padLeft(5);
+        
+            if (unit.stack() != null && unit.stack().amount > 0) {
+                t.labelWrap(() -> unit.stack().item.emoji() + " " + (long)unit.stack().amount + "").left().padLeft(0);
+            }
+        
         }).growX().left();
         table.row();
 
@@ -488,7 +493,7 @@ public class UnitType extends UnlockableContent{
             bars.defaults().growX().height(20f).pad(4);
 
             //TODO overlay shields
-            bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+            bars.add(new Bar(()->String.format("%s: %d/%d", Core.bundle.get("stat.health"), (int)unit.health, (int)unit.maxHealth), ()->Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
             if(state.rules.unitAmmo){
@@ -532,6 +537,8 @@ public class UnitType extends UnlockableContent{
             table.add(Core.bundle.format("lastcommanded", unit.lastCommanded)).growX().wrap().left();
         }
 
+        table.row();
+        table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
         table.row();
     }
 
