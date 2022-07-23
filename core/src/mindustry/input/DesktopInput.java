@@ -15,6 +15,7 @@ import mindustry.*;
 import mindustry.core.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
+import mindustry.game.Teams.BlockPlan;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -48,6 +49,9 @@ public class DesktopInput extends InputHandler{
     /** Previously selected tile. */
     public Tile prevSelected;
 
+    public int freecam = 0;
+    public Vec2 cameraTarget = new Vec2();
+
     boolean showHint(){
         return ui.hudfrag.shown && Core.settings.getBool("hints") && selectPlans.isEmpty() &&
             (!isBuilding && !Core.settings.getBool("buildautopause") || player.unit().isBuilding() || !player.dead() && !player.unit().spawnedByCore());
@@ -68,13 +72,18 @@ public class DesktopInput extends InputHandler{
                     str.setLength(0);
                     if(!isBuilding && !Core.settings.getBool("buildautopause") && !player.unit().isBuilding()){
                         str.append(Core.bundle.format("enablebuilding", Core.keybinds.get(Binding.pause_building).key.toString()));
+                        str.append("\n").append(Core.bundle.format("rebuildbuilding", Core.keybinds.get(Binding.rebuild_brush).key.toString()));
                     }else if(player.unit().isBuilding()){
                         str.append(Core.bundle.format(isBuilding ? "pausebuilding" : "resumebuilding", Core.keybinds.get(Binding.pause_building).key.toString()))
                             .append("\n").append(Core.bundle.format("cancelbuilding", Core.keybinds.get(Binding.clear_building).key.toString()))
-                            .append("\n").append(Core.bundle.format("selectschematic", Core.keybinds.get(Binding.schematic_select).key.toString()));
+                            .append("\n").append(Core.bundle.format("selectschematic", Core.keybinds.get(Binding.schematic_select).key.toString()))
+                            .append("\n").append(Core.bundle.format("rebuildbuilding", Core.keybinds.get(Binding.rebuild_brush).key.toString()));
                     }
                     if(!player.dead() && !player.unit().spawnedByCore()){
                         str.append(str.length() != 0 ? "\n" : "").append(Core.bundle.format("respawn", Core.keybinds.get(Binding.respawn).key.toString()));
+                    }
+                    if(freecam != 0) {
+                        str.append(str.length() != 0 ? "\n" : "").append(Core.bundle.format("freecammode", Core.keybinds.get(Binding.freecam).key.toString()));
                     }
                     return str;
                 }).style(Styles.outlineLabel);
@@ -193,7 +202,56 @@ public class DesktopInput extends InputHandler{
             }
         }
 
+        if (freecam != 0) {
+            float a = 0.2f;
+            if (Core.input.keyDown(Binding.slowcam)) {
+                a = 0.8f;
+            }
+            if (freecam == 1) {
+                Draw.color(Color.toFloatBits(1f, 0, 0, a));
+            }
+            else if (freecam == 2) {
+                Draw.color(Color.toFloatBits(1f, 1f, 0, a));
+            }
+            Lines.stroke(1f);
+            float radius = Interp.swingIn.apply(1.1f);
+
+            float spikesTime = Time.time;
+
+            if(Core.settings.getBool("autotarget")) {
+              Lines.poly(Core.camera.position.x, Core.camera.position.y, 4, 6f * radius, spikesTime * 1.5f);
+            }
+            else {
+              Lines.circle(Core.camera.position.x, Core.camera.position.y, radius * 5f);
+            }
+
+            Lines.spikes(Core.camera.position.x, Core.camera.position.y, 4f * radius, 6f * radius, 4, spikesTime * 1.5f);
+            Draw.reset();
+		}
+        if(!isBuilding) {
+            drawDestroyed();
+            if(input.keyDown(Binding.rebuild_brush)) {
+                Drawf.circles(input.mouseWorldX(), input.mouseWorldY(), 100f, Color.green);
+            } 
+        }
         Draw.reset();
+    }
+
+    public void drawDestroyed(){
+        if(!Core.settings.getBool("destroyedblocks")) return;
+
+        float brokenFade = 1f;
+        if(brokenFade > 0.001f){
+            for(BlockPlan block : player.team().data().plans){
+                Block b = content.block(block.block);
+                if(!camera.bounds(Tmp.r1).grow(tilesize * 2f).overlaps(Tmp.r2.setSize(b.size * tilesize).setCenter(block.x * tilesize + b.offset, block.y * tilesize + b.offset))) continue;
+
+                Draw.alpha(0.33f * brokenFade);
+                Draw.mixcol(Color.white, 0.2f + Mathf.absin(Time.globalTime, 6f, 0.2f));
+                Draw.rect(b.fullIcon, block.x * tilesize + b.offset, block.y * tilesize + b.offset, b.rotate ? block.rotation * 90 : 0f);
+            }
+            Draw.reset();
+        }
     }
 
     @Override
@@ -217,7 +275,34 @@ public class DesktopInput extends InputHandler{
             panning = false;
         }
 
-        if(!locked){
+        // rebuild plan
+        if(!isBuilding) {
+            if(input.keyDown(Binding.rebuild_brush) && !Mathf.within(Core.input.deltaX(), Core.input.deltaY(), 5f)) {
+                for (BlockPlan block : player.team().data().plans) {
+                    if(Mathf.within(((Core.input.mouseWorldX())), ((Core.input.mouseWorldY())), block.x*tilesize, block.y*tilesize, 100f)) {
+                        player.unit().addBuild(new BuildPlan(block.x, block.y, block.rotation, content.block(block.block), block.config));
+                    }
+                }
+            }
+        }
+
+        if(input.keyTap(Binding.freecam)) {
+            cameraTarget.set(camera.position);
+            freecam += 1;
+            freecam %= 3;
+        }
+        if (freecam == 0) {
+            cameraTarget.set(camera.position);
+        } else {
+            float camSpeeds = !Core.input.keyDown(Binding.boost) ? 10f : 25f;
+            camSpeeds *= Core.input.keyDown(Binding.slowcam) ? 0.12f : 1f;
+            if ( !ui.chatfrag.shown() && !scene.hasField() && !scene.hasDialog()) {
+                cameraTarget.add(Tmp.v1.setZero().add(Core.input.axis(Binding.move_x), Core.input.axis(Binding.move_y)).nor().scl(Time.delta * camSpeeds));
+            }   
+            camera.position.lerpDelta(cameraTarget, 0.08f);         
+        }
+
+        if(!locked && freecam == 0){
             if(((player.dead() || state.isPaused()) && !ui.chatfrag.shown()) && !scene.hasField() && !scene.hasDialog()){
                 if(input.keyDown(Binding.mouse_move)){
                     panCam = true;
@@ -720,6 +805,18 @@ public class DesktopInput extends InputHandler{
             movement.add(input.mouseWorld().sub(player).scl(1f / 25f * speed)).limit(speed);
         }
 
+        if(freecam == 2) {
+            movement.setZero();
+            movement.add(camera.position.cpy().sub(player).scl(1f / 25f * speed)).limit(speed);
+        }
+        if(freecam == 1) {
+            movement.setZero();
+		}
+        if(freecam == 0 && Core.input.keyDown(Binding.boost)) {
+            movement.set(xa, ya).nor().scl(speed * 1.25f);
+            unit.vel.set(movement);
+		}
+		
         float mouseAngle = Angles.mouseAngle(unit.x, unit.y);
         boolean aimCursor = omni && player.shooting && unit.type.hasWeapons() && unit.type.faceTarget && !boosted;
 
