@@ -1122,6 +1122,27 @@ public class UnitType extends UnlockableContent{
             drawControl(unit);
         }
 
+        if(Core.settings.getBool("hideunit")) {
+            if(!isPayload) {
+
+            
+            Draw.z(Math.min(Layer.darkness, z));
+
+            float e = Mathf.clamp(unit.elevation, shadowElevation, 1f) * shadowElevationScl * (1f - unit.drownTime);
+            float x = unit.x, y = unit.y;
+            Floor floor = world.floorWorld(x, y);
+    
+            float dest = floor.canShadow ? 1f : 0f;
+            //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
+            unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
+            Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha);
+    
+            Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
+            Draw.color();
+            }
+            return;
+        }
+
         if(!isPayload && (unit.isFlying() || shadowElevation > 0)){
             Draw.z(Math.min(Layer.darkness, z - 1f));
             drawShadow(unit);

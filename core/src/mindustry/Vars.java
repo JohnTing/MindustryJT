@@ -250,6 +250,8 @@ public class Vars implements Loadable{
 
     public static Player player;
 
+    public static HideUnit hideUnit;
+
     @Override
     public void loadAsync(){
         loadSettings();
@@ -333,6 +335,8 @@ public class Vars implements Loadable{
 
         mods.load();
         maps.load();
+
+        hideUnit = new HideUnit();
     }
 
     /** Checks if a launch failure occurred.
