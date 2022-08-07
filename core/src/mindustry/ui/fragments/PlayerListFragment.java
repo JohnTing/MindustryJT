@@ -12,6 +12,8 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustry.input.DesktopInput;
+import mindustry.input.MobileInput;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
 import mindustry.ui.*;
@@ -107,7 +109,25 @@ public class PlayerListFragment{
                 }
             };
             table.margin(8);
-            table.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();
+            // table.add(new Image(user.icon()).setScaling(Scaling.bounded)).grow();
+
+            ImageButton usericon = new ImageButton(user.icon());
+            usericon.getImageCell().size(55);
+            usericon.tapped(() -> {
+                if (control.input instanceof DesktopInput input) {
+                    if (input.freecam == 0) {
+                        input.freecam = 1;
+                    }
+                    input.cameraTarget.set(user.x(), user.y());
+                }
+                else if (control.input instanceof MobileInput input) {
+                    Core.camera.position.set(user.x(), user.y());
+                }
+                this.toggle();
+            });
+            table.add(usericon);
+
+
             table.name = user.name();
 
             button.add(table).size(h);
