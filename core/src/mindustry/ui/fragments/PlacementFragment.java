@@ -578,6 +578,10 @@ public class PlacementFragment{
 
         //check for a unit
         Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
+        if(unit == null) {
+            unit = Units.closestEnemy(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
+        }
+
         //if cursor has a unit, display it
         if(unit != null) return unit;
 

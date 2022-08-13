@@ -718,6 +718,22 @@ public class DesktopInput extends InputHandler{
 
             mode = none;
         }
+        boolean hideunit = Core.settings.getBool("hideunit");
+        if(Core.input.keyTap(Binding.hide_units)){
+            hideunit = !hideunit;
+
+            if (state.isPaused()) {
+                hideunit = false;
+            }
+            
+        }
+        if (Core.settings.getBool("buildhideunit") && (isPlacing() || isBreaking())) {
+            Core.settings.put("hideunit", true);
+        } else {
+            Core.settings.put("hideunit", hideunit);
+        }
+
+
 
         if(Core.input.keyTap(Binding.toggle_block_status)){
             Core.settings.put("blockstatus", !Core.settings.getBool("blockstatus"));
