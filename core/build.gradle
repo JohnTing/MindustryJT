@@ -17,6 +17,10 @@ generateTypeScript {
     jsonLibrary = 'jackson2'
     classPatterns = [
         
+        "mindustry.ui.dialogs.BaseDialog", 
+        "mindustry.ui.dialogs.**",
+        "mindustry.ui.layout.**",
+        "mindustry.ui.fragments.*",
         "mindustry.*", 
         "mindustry.ai.**", 
         "mindustry.async.**", 
@@ -35,7 +39,7 @@ generateTypeScript {
         "mindustry.service.**",        
         "mindustry.type.**",                
         "mindustry.world.**", 
-        "mindustry.ui.*",       
+        "mindustry.ui.*",
         "arc.**"
     ]
     excludeClasses = [
@@ -112,5 +116,6 @@ generateTypeScript {
     "arc.util.serialization.UBJsonWriter\$JsonObject:UBJsonWriter_JsonObject", 
 
     "mindustry.editor.MapResizeDialog\$ResizeListener:MapResizeDialog_ResizeListener", 
+    "mindustry.ui.dialogs.JoinDialog\$Server:JoinDialog_Server"
     ]
 }
