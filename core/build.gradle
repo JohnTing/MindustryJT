@@ -16,18 +16,101 @@ buildscript {
 generateTypeScript {
     jsonLibrary = 'jackson2'
     classPatterns = [
-        'mindustry.core.*'
+        
+        "mindustry.*", 
+        "mindustry.ai.**", 
+        "mindustry.async.**", 
+        "mindustry.audio.**", 
+        "mindustry.content.**", 
+        "mindustry.core.**", 
+        "mindustry.ctype.**", 
+        "mindustry.editor.**", 
+        "mindustry.entities.**", 
+        "mindustry.game.**", 
+        "mindustry.graphics.**",   
+        "mindustry.io.**",         
+        "mindustry.login.**", 
+        "mindustry.map.**",         
+        "mindustry.mod.**",         
+        "mindustry.service.**",        
+        "mindustry.type.**",                
+        "mindustry.world.**", 
+        "mindustry.ui.*",       
+        "arc.**"
+    ]
+    excludeClasses = [
     ]
     outputFile = 'build/sample.d.ts'
-    outputKind = 'module'
-    customTypeNaming = ["arc.struct.ObjectIntMap\$Entry:IntMap_Entry", 
-    "arc.struct.ObjectFloatMap\$Entry:FloatMap_Entry", 
-    "arc.struct.ObjectMap\$Entry:ObjectMap_Entry", 
+    outputKind = 'global'
+    customTypeNaming = [
     "rhino.Context:Context", 
-    "mindustry.core.World\$Context:World_Context"
+    "mindustry.core.World\$Context:World_Context", 
+    "mindustry.core.GameState\$State:GameState_State", 
+    "mindustry.editor.MapEditor\$Context:MapEditor_Context", 
+    "mindustry.editor.MapObjectivesCanvas\$ObjectiveTilemap\$ObjectiveTile\$Mover:ObjectiveTile_Mover", 
+    "mindustry.editor.WaveGraph\$Mode:WaveGraph_Mode", 
+    "mindustry.graphics.Voronoi\$Edge:Voronoi_Edge", 
+    "mindustry.graphics.g3d.PlanetGrid\$Edge:PlanetGrid_Edge", 
+    "mindustry.world.blocks.distribution.DirectionLiquidBridge\$DuctBridgeBuild:DirectionLiquidBridge_DuctBridgeBuild", 
+    "mindustry.world.blocks.distribution.DuctBridge\$DuctBridgeBuild:DuctBridge_DuctBridgeBuild", 
+    "mindustry.graphics.LoadRenderer\$Bar:LoadRenderer_Bar", 
+    "arc.graphics.g2d.Font\$Glyph:Font_Glyph", 
+    "arc.freetype.FreeType\$Glyph:FreeType_Glyph", 
+    "arc.flabel.effects.WaveEffect:flabel_WaveEffect", 
+    "mindustry.entities.effect.WaveEffect:WaveEffect", 
+    "arc.graphics.g2d.PixmapPacker\$GuillotineStrategy\$Node:GuillotineStrategy_Node", 
+    "arc.struct.BinaryHeap\$Node:BinaryHeap_Node", 
+    "arc.scene.event.FocusListener\$FocusEvent\$Type:FocusEvent_Type", 
+    "mindustry.editor.MapResizeDialog_ResizeListener:MapResizeDialog_ResizeListener", 
 
+    "arc.struct.ArrayMap\$Entries:ArrayMap_Entries", 
+    "arc.struct.IntFloatMap\$Entries:IntFloatMap_Entries", 
+    "arc.struct.IntIntMap\$Entries:IntIntMap_Entries", 
+    "arc.struct.IntMap\$Entries:IntMap_Entries", 
+    "arc.struct.LongMap\$Entries:LongMap_Entries", 
+    "arc.struct.ObjectFloatMap\$Entries:ObjectFloatMap_Entries", 
+    "arc.struct.ObjectIntMap\$Entries:ObjectIntMap_Entries", 
+    "arc.struct.ObjectMap\$Entries:ObjectMap_Entries", 
+    "arc.struct.IntFloatMap\$Entries:IntFloatMap_Entries",    
 
+    "arc.struct.ArrayMap\$Keys:ArrayMap_Keys", 
+    "arc.struct.IntFloatMap\$Keys:IntFloatMap_Keys", 
+    "arc.struct.IntIntMap\$Keys:IntIntMap_Keys", 
+    "arc.struct.IntMap\$Keys:IntMap_Keys", 
+    "arc.struct.LongMap\$Keys:LongMap_Keys", 
+    "arc.struct.ObjectFloatMap\$Keys:ObjectFloatMap_Keys", 
+    "arc.struct.ObjectIntMap\$Keys:ObjectIntMap_Keys", 
+    "arc.struct.ObjectMap\$Keys:ObjectMap_Keys", 
+
+    "arc.struct.ArrayMap\$Values:ArrayMap_Values", 
+    "arc.struct.IntFloatMap\$Values:IntFloatMap_Values", 
+    "arc.struct.IntIntMap\$Values:IntIntMap_Values", 
+    "arc.struct.IntMap\$Values:IntMap_Values", 
+    "arc.struct.LongMap\$Values:LongMap_Values", 
+    "arc.struct.ObjectFloatMap\$Values:ObjectFloatMap_Values", 
+    "arc.struct.ObjectIntMap\$Values:ObjectIntMap_Values", 
+    "arc.struct.ObjectMap\$Values:ObjectMap_Values", 
+
+    "arc.struct.IntFloatMap\$Entry:IntFloatMap_Entry", 
+    "arc.struct.IntIntMap\$Entry:IntIntMap_Entry", 
+    "arc.struct.IntMap\$Entry:IntMap_Entry", 
+    "arc.struct.LongMap\$Entry:LongMap_Entry", 
+    "arc.struct.ObjectIntMap\$Entry:ObjectIntMap_Entry",
+    "arc.struct.ObjectFloatMap\$Entry:ObjectFloatMap_Entry", 
+    "arc.struct.ObjectMap\$Entry:ObjectMap_Entry", 
+
+    "arc.struct.IntFloatMap\$MapIterator:IntFloatMap_MapIterator", 
+    "arc.struct.IntIntMap\$MapIterator:IntIntMap_MapIterator", 
+    "arc.struct.IntMap\$MapIterator:IntMap_MapIterator", 
+    "arc.struct.LongMap\$MapIterator:LongMap_MapIterator", 
+    "arc.struct.ObjectFloatMap\$MapIterator:ObjectFloatMap_MapIterator", 
+    "arc.struct.ObjectIntMap\$MapIterator:ObjectIntMap_MapIterator", 
+    "arc.struct.ObjectMap\$MapIterator:ObjectMap_MapIterator", 
+    "mindustry.editor.WaveInfoDialog\$Sort:WaveInfoDialog_Sort", 
+
+    "arc.util.serialization.JsonWriter\$JsonObject:JsonWriter_JsonObject", 
+    "arc.util.serialization.UBJsonWriter\$JsonObject:UBJsonWriter_JsonObject", 
+
+    "mindustry.editor.MapResizeDialog\$ResizeListener:MapResizeDialog_ResizeListener", 
     ]
-
-
 }
