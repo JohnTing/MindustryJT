@@ -504,7 +504,12 @@ public class UnitType extends UnlockableContent{
         table.table(t -> {
             t.left();
             t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
-            t.labelWrap(localizedName).left().width(190f).padLeft(5);
+            t.labelWrap(String.format("%s (%d/%d)", localizedName, unit.team.data().countType(unit.type), Units.getCap(unit.team))).left().width(190f).padLeft(5);
+        
+            if (unit.stack() != null && unit.stack().amount > 0) {
+                t.labelWrap(() -> unit.stack().item.emoji() + " " + (long)unit.stack().amount + "").left().padLeft(0);
+            }
+        
         }).growX().left();
         table.row();
 
@@ -512,7 +517,7 @@ public class UnitType extends UnlockableContent{
             bars.defaults().growX().height(20f).pad(4);
 
             //TODO overlay shields
-            bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+            bars.add(new Bar(()->String.format("%s: %d/%d", Core.bundle.get("stat.health"), (int)unit.health, (int)unit.maxHealth), ()->Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
             if(state.rules.unitAmmo){
@@ -545,8 +550,8 @@ public class UnitType extends UnlockableContent{
                 table.row();
                 table.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().wrap().left();
             }
-            table.row();
-            table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
+            // table.row();
+            // table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
             if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                 table.row();
                 table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
@@ -556,6 +561,8 @@ public class UnitType extends UnlockableContent{
             table.add(Core.bundle.format("lastcommanded", unit.lastCommanded)).growX().wrap().left();
         }
 
+        table.row();
+        table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
         table.row();
     }
 
@@ -1142,6 +1149,27 @@ public class UnitType extends UnlockableContent{
 
         if(unit.controller().isBeingControlled(player.unit())){
             drawControl(unit);
+        }
+
+        if(Core.settings.getBool("hideunit")) {
+            if(!isPayload) {
+
+            
+            Draw.z(Math.min(Layer.darkness, z));
+
+            float e = Mathf.clamp(unit.elevation, shadowElevation, 1f) * shadowElevationScl * (1f - unit.drownTime);
+            float x = unit.x, y = unit.y;
+            Floor floor = world.floorWorld(x, y);
+    
+            float dest = floor.canShadow ? 1f : 0f;
+            //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
+            unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
+            Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha);
+    
+            Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
+            Draw.color();
+            }
+            return;
         }
 
         if(!isPayload && (unit.isFlying() || shadowElevation > 0)){

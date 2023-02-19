@@ -12,9 +12,9 @@ public enum Binding implements KeyBind{
     pan(KeyCode.mouseForward),
 
     boost(KeyCode.shiftLeft),
-    command_mode(KeyCode.shiftLeft),
+    command_mode(KeyCode.g),
     control(KeyCode.controlLeft),
-    respawn(KeyCode.v),
+    respawn(KeyCode.b),
     select(KeyCode.mouseLeft),
     deselect(KeyCode.mouseRight),
     break_block(KeyCode.mouseRight),
@@ -75,6 +75,11 @@ public enum Binding implements KeyBind{
     chat_scroll(new Axis(KeyCode.scroll)),
     chat_mode(KeyCode.tab),
     console(KeyCode.f8),
+
+    freecam(KeyCode.v),
+    slowcam(KeyCode.controlLeft),
+    hide_units(KeyCode.space),
+    rebuild_brush(KeyCode.r),
     ;
 
     private final KeybindValue defaultValue;

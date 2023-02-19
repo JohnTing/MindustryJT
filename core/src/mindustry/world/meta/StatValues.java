@@ -413,6 +413,11 @@ public class StatValues{
 
                         ammo(ObjectMap.of(t, type.fragBullet), indent + 1, false).display(bt);
                     }
+
+                    if(type.range > 0){
+                        sep(bt, String.format("[lightgray]%s[lightgray]: [white]%d %s", Core.bundle.format("stat.shootrange"), (int)(type.range/tilesize) ,  Core.bundle.format("unit.blocks")));
+                    }
+
                 }).padTop(compact ? 0 : -9).padLeft(indent * 8).left().get().background(compact ? null : Tex.underline);
 
                 table.row();
