@@ -157,8 +157,9 @@ public class PlayerListFragment{
                     if (control.input instanceof DesktopInput input) {
                         if (input.freecam == 0) {
                             input.freecam = 1;
-                            input.cameraTarget.set(user.x(), user.y());
+                            
                         }
+                        input.cameraTarget.set(user.x(), user.y());
                     }
                 }
             });
