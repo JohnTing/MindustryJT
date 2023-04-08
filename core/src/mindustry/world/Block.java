@@ -565,14 +565,18 @@ public class Block extends UnlockableContent implements Senseable{
     /** Adds a liquid bar that dynamically displays a liquid type. */
     public <T extends Building> void addLiquidBar(Func<T, Liquid> current){
         addBar("liquid", entity -> new Bar(
-            () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") : current.get((T)entity).localizedName,
+            () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") : String.format("%s: %.1f/%.1f", current.get((T)entity).localizedName ,entity.liquids.get(current.get((T)entity)), liquidCapacity),
             () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
             () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
         );
-    }
+    }   
 
     public void setBars(){
-        addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        // addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        addBar("health", entity -> new Bar(
+            () -> String.format("%s: %d/%d", Core.bundle.format("stat.health") ,(int)entity.health, (int)entity.maxHealth ), 
+        () -> Pal.health, 
+        entity::healthf).blink(Color.white));
 
         if(consPower != null){
             boolean buffered = consPower.buffered;

@@ -1,2 +1,33 @@
 sourceSets.main.java.srcDirs = ["src/", "$buildDir/generated/sources/annotationProcessor/java/main"]
 sourceSets.main.kotlin.srcDirs = ["src/"]
+
+sourceSets.main.kotlin.srcDirs += "$buildDir/generated/source/kapt/main/"
+sourceSets.main.kotlin.srcDirs += "../annotations/src/main/java/"
+
+apply plugin: 'cz.habarta.typescript-generator'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'cz.habarta.typescript-generator', name: 'typescript-generator-gradle-plugin', version: '3.0.1157'
+    }
+}
+generateTypeScript {
+    jsonLibrary = 'jackson2'
+    classPatterns = [
+        'mindustry.core.*'
+    ]
+    outputFile = 'build/sample.d.ts'
+    outputKind = 'module'
+    customTypeNaming = ["arc.struct.ObjectIntMap\$Entry:IntMap_Entry", 
+    "arc.struct.ObjectFloatMap\$Entry:FloatMap_Entry", 
+    "arc.struct.ObjectMap\$Entry:ObjectMap_Entry", 
+    "rhino.Context:Context", 
+    "mindustry.core.World\$Context:World_Context"
+
+
+    ]
+
+
+}

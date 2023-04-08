@@ -431,6 +431,9 @@ public class StatValues{
                         bt.add(coll);
                     }
 
+                    if(type.range > 0){
+                        sep(bt, String.format("[lightgray]%s[lightgray]: [white]%d %s", Core.bundle.format("stat.shootrange"), (int)(type.range/tilesize) ,  Core.bundle.format("unit.blocks")));
+                    }
                     if(type.fragBullet != null){
                         bt.row();
 

@@ -1,6 +1,7 @@
 package mindustry.world.blocks.defense;
 
 import arc.*;
+import arc.Core;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
@@ -79,10 +80,41 @@ public class ForceProjector extends Block{
         super.init();
     }
 
+    public int getShieldMaxHealth(ForceBuild entity) {
+        if(entity.broken) {
+            return (int)(shieldHealth);
+        } else {
+            return (int)(shieldHealth + phaseShieldBoost * entity.phaseHeat);
+        }
+    }
+    public int getShieldHealth(ForceBuild entity) {
+        if(entity.broken) {
+            return (int)entity.buildup;
+        } else {
+            return (int)(shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup);
+        }
+    }
+    private String shieldName(ForceBuild entity) {
+        if(entity.broken) {
+            return String.format("%s: %d/%d", Core.bundle.format("bar.heat"), getShieldHealth(entity), getShieldMaxHealth(entity));
+        } else {
+            return String.format("%s: %d/%d", Core.bundle.format("stat.shieldhealth"), getShieldHealth(entity), getShieldMaxHealth(entity));
+        }
+    }
+    private float shieldPercentage(ForceBuild entity) {
+        return (float)getShieldHealth(entity) / getShieldMaxHealth(entity);
+    }
+
+
     @Override
     public void setBars(){
         super.setBars();
-        addBar("shield", (ForceBuild entity) -> new Bar("stat.shieldhealth", Pal.accent, () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat)).blink(Color.white));
+        // addBar("shield", (ForceBuild entity) -> new Bar("stat.shieldhealth", Pal.accent, () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat)).blink(Color.white));
+        
+        addBar("shield", (ForceBuild entity) -> new Bar(
+            () -> shieldName(entity), 
+            () -> entity.broken ? Pal.lightOrange : Pal.accent, 
+            () -> shieldPercentage(entity)).blink(Color.white));
     }
 
     @Override
