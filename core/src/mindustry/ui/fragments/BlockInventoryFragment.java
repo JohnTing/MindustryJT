@@ -14,6 +14,7 @@ import arc.scene.ui.layout.Stack;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.content.Blocks;
 import mindustry.core.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
@@ -232,7 +233,12 @@ public class BlockInventoryFragment{
     private void updateTablePosition(){
         Vec2 v = Core.input.mouseScreen(build.x + build.block.size * tilesize / 2f, build.y + build.block.size * tilesize / 2f);
         table.pack();
-        table.setPosition(v.x, v.y, Align.topLeft);
+        if (build.block == Blocks.itemBridge) {
+            v.add(5f, 5f);
+            table.setPosition(v.x, v.y, Align.bottomLeft);
+        } else {
+            table.setPosition(v.x, v.y, Align.topLeft);
+        }
     }
 
     private Element itemImage(TextureRegion region, Prov<CharSequence> text){

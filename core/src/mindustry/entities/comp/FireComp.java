@@ -102,6 +102,10 @@ abstract class FireComp implements Timedc, Posc, Syncc, Drawc{
 
     @Override
     public void draw(){
+        if( arc.Core.input.keyDown(mindustry.input.Binding.hide_units) || (arc.Core.settings.getBool("hideunitonbuild") && mindustry.Vars.control.input.isPlacing() ) ) {
+            return;
+        }
+
         if(regions[0] == null){
             for(int i = 0; i < frames; i++){
                 regions[i] = Core.atlas.find("fire" + i);

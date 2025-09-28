@@ -92,7 +92,7 @@ public class Binding{
     research = KeyBind.add("research", KeyCode.j),
     planetMap = KeyBind.add("planet_map", KeyCode.n),
     blockInfo = KeyBind.add("block_info", KeyCode.f1),
-    toggleMenus = KeyBind.add("toggle_menus", KeyCode.c),
+    toggleMenus = KeyBind.add("toggle_menus", KeyCode.n),
     screenshot = KeyBind.add("screenshot", KeyCode.p),
     togglePowerLines = KeyBind.add("toggle_power_lines", KeyCode.f5),
     toggleBlockStatus = KeyBind.add("toggle_block_status", KeyCode.f6),
@@ -103,7 +103,8 @@ public class Binding{
     chatScroll = KeyBind.add("chat_scroll", new Axis(KeyCode.scroll)),
     chatMode = KeyBind.add("chat_mode", KeyCode.tab),
     console = KeyBind.add("console", KeyCode.f8),
-    debugHitboxes = KeyBind.add("debug_hitboxes", KeyCode.unset)
+    debugHitboxes = KeyBind.add("debug_hitboxes", KeyCode.unset),
+    hide_units =  KeyBind.add("hide_units", KeyCode.space)
     ;
 
     //dummy static class initializer

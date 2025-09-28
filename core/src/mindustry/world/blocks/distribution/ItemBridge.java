@@ -56,7 +56,7 @@ public class ItemBridge extends Block{
         allowDiagonal = false;
         copyConfig = false;
         //disabled as to not be annoying
-        allowConfigInventory = false;
+        allowConfigInventory = true;
         priority = TargetPriority.transport;
 
         //point2 config is relative
