@@ -123,6 +123,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public final BlockConfigFragment config;
     public final PlanConfigFragment planConfig;
 
+    public int hiddenUI;
+
     private WidgetGroup group = new WidgetGroup();
 
     private final Eachable<BuildPlan> allPlans = cons -> {

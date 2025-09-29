@@ -522,8 +522,8 @@ public class SettingsMenuDialog extends BaseDialog{
         if(!mobile){
             Core.settings.put("swapdiagonal", false);
         }
-
-        graphics.checkPref("hideunitonbuild", false);
+        graphics.checkPref("hiddenrender", false);
+        graphics.checkPref("hiddenrenderonbuild", false);
     }
 
     public void exportData(Fi file) throws IOException{

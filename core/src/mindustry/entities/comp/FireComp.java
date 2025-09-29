@@ -102,7 +102,7 @@ abstract class FireComp implements Timedc, Posc, Syncc, Drawc{
 
     @Override
     public void draw(){
-        if( arc.Core.input.keyDown(mindustry.input.Binding.hide_units) || (arc.Core.settings.getBool("hideunitonbuild") && mindustry.Vars.control.input.isPlacing() ) ) {
+        if( arc.Core.settings.getBool("hiddenrender") || (arc.Core.settings.getBool("hiddenrenderonbuild") && mindustry.Vars.control.input.isPlacing() ) ) {
             return;
         }
 
