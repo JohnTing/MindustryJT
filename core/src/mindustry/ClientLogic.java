@@ -34,6 +34,12 @@ public class ClientLogic {
     }
     private static final Seq<Building> outArray1 = new Seq<>();
     private static final Seq<Building> outArray2 = new Seq<>();
+
+
+    public static float powerUse(PowerGraph powerGraph ) {
+        return (powerGraph.getLastPowerNeeded() + powerGraph.getLastPowerProduced())*60;
+    }
+
 /**
      * 檢查移除一個建築後，其所在的電力網絡（PowerGraph）是否會分裂成多個。
      *

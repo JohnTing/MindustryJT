@@ -526,8 +526,8 @@ public class SettingsMenuDialog extends BaseDialog{
         graphics.checkPref("hiddenrenderonbuild", false);
 
 
-        graphics.sliderPref("powersplitwarn", 0, 0, 10000, 100, s -> ""+s);
-        graphics.sliderPref("powerremovewarn", 0, 0, 10000, 100, s -> ""+s);
+        graphics.sliderPref("splitpowerwarn", 0, 0, 10000, 100, s -> s == 0 ? "disable": s+"");
+        graphics.sliderPref("removepowerwarn", 0, 0, 10000, 100, s ->  s == 0 ? "disable": s+"");
     }
 
     public void exportData(Fi file) throws IOException{
