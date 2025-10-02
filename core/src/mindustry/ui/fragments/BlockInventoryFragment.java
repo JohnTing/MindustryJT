@@ -233,7 +233,7 @@ public class BlockInventoryFragment{
     private void updateTablePosition(){
         Vec2 v = Core.input.mouseScreen(build.x + build.block.size * tilesize / 2f, build.y + build.block.size * tilesize / 2f);
         table.pack();
-        if (build.block == Blocks.itemBridge) {
+        if (build.block == Blocks.itemBridge || build.block == Blocks.phaseConveyor) {
             v.add(5f, 5f);
             table.setPosition(v.x, v.y, Align.bottomLeft);
         } else {

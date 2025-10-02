@@ -35,6 +35,10 @@ public class Build{
             prevPercent = tile.build.healthf();
         }
 
+        if(unit != null && unit.getControllerName() != null && tile.build != null){
+            tile.build.lastBreak = unit.getControllerName();
+        }
+
         int rotation = tile.build != null ? tile.build.rotation : 0;
         Block previous = tile.block();
 
@@ -77,6 +81,10 @@ public class Build{
 
         //just in case
         if(tile == null) return;
+
+        if(unit != null && unit.getControllerName() != null && tile.build != null){
+            tile.build.lastPlace = unit.getControllerName();
+        }
 
         //auto-rotate the block to the correct orientation and bail out
         if(tile.team() == team && tile.block == result && tile.build != null && tile.block.quickRotate){

@@ -8,6 +8,7 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.core.*;
 import mindustry.entities.units.*;
@@ -73,7 +74,20 @@ public class PowerNode extends PowerBlock{
                     //create new graph for other end
                     PowerGraph og = new PowerGraph();
                     //reflow from other end
-                    og.reflow(other);
+
+                    Vars.ui.showLabel("other.power.graph.getLastScaledPowerOut()"+other.power.graph.getLastPowerProduced(), 5f, other.tile.worldx(), other.tile.worldy());
+                    if(arc.Core.settings.getInt("powersplitwarn", 0) > 0 && other.power.graph.getLastPowerProduced() > arc.Core.settings.getInt("powersplitwarn", 0)) {
+                        if(entity.lastAccessed != null) {
+                            String message = String.format("[%s] split power at (%d, %d)", Strings.stripColors(entity.lastAccessed), 
+                                entity.tileX(), entity.tileY());
+                            if(Vars.ui.chatfrag.messages.size > 0 && !message.equals(Vars.ui.chatfrag.messages.get(0))) {
+                                Vars.ui.showLabel(message, 5f, entity.tile.worldx(), entity.tile.worldy());
+                                Vars.ui.chatfrag.addMessage(message);
+                                Vars.ui.consolefrag.add(message);
+                            }
+                        }
+                    }
+                    
                 }
             }else if(linkValid(entity, other) && valid && power.links.size < maxNodes){
 

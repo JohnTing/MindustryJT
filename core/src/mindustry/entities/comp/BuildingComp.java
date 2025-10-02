@@ -68,6 +68,10 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     transient int rotation;
     transient float payloadRotation;
     transient String lastAccessed;
+    transient String lastBreak;
+    transient String lastPlace;
+    
+
     transient boolean wasDamaged; //used only by the indexer
     transient float visualLiquid;
 
@@ -1154,6 +1158,20 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     public void powerGraphRemoved(){
         if(power == null) return;
 
+        if(this.block instanceof PowerBlock && lastBreak != null) {
+
+            
+            if(arc.Core.settings.getInt("powerremovewarn", 0) > 0 && power.graph.getLastPowerProduced() > arc.Core.settings.getInt("powerremovewarn", 0)) {
+                
+                if(ClientLogic.willPowerGraphSplit(self())) {
+                    String message = String.format("[%s] remove power at (%d, %d)", lastBreak, tile.x, tile.y);
+                    Vars.ui.showLabel(message, 5f, tile.worldx(), tile.worldy());
+                    Vars.ui.chatfrag.addMessage(message);
+                    Vars.ui.consolefrag.add(message);
+                }
+            }
+        }
+
         power.graph.remove(self());
         for(int i = 0; i < power.links.size; i++){
             Tile other = world.tile(power.links.get(i));
@@ -1163,7 +1181,6 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         }
         power.links.clear();
     }
-
     public boolean conductsTo(Building other){
         return !block.insulated;
     }
