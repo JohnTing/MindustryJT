@@ -40,7 +40,7 @@ jobs:
 
     - name: Build JARs and APK with extracted version
       # 執行 gradle 編譯，-Pbuildversion 參數使用我們剛剛提取的版本號
-      run: ./gradlew desktop:dist server:dist android:assembleRelease -Pbuildversion=${{ env.BUILD_VERSION }}
+      run: ./gradlew clean desktop:dist server:dist android:assembleRelease -Pbuildversion=${{ env.BUILD_VERSION }}
 
     - name: Create Release and Upload Artifacts
       # 這個 action 會自動完成以下事情：
