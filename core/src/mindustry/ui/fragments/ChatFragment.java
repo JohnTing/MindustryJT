@@ -55,7 +55,7 @@ public class ChatFragment extends Table{
                 }
             }
 
-            return net.active() && ui.hudfrag.shown;
+            return ui.hudfrag.shown;
         });
 
         update(() -> {

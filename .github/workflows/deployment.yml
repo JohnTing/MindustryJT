@@ -40,14 +40,19 @@ jobs:
       id: extract_vars
       run: |
         BRANCH_NAME="${{ github.ref_name }}"
-        VERSION=$(echo "$BRANCH_NAME" | sed 's/^v//')
+        # 【關鍵修改】使用正則表達式捕獲組來提取純數字版本號
+        VERSION=$(echo "$BRANCH_NAME" | sed -E 's/^v([0-9.]+).*/\1/')
         TIMESTAMP=$(date +%Y%m%d%H%M%S)
-        UNIQUE_TAG="${BRANCH_NAME}-${TIMESTAMP}"
         
+        # 為了保持 Release 名稱的完整性，我們可以使用原始分支名
+        # 或者您可以自訂一個不含後綴的版本，例如：RELEASE_NAME="Release v${VERSION}"
+        UNIQUE_TAG="Release ${BRANCH_NAME}-${TIMESTAMP}"
+
         echo "Branch name is: $BRANCH_NAME"
-        echo "Extracted version for build: $VERSION"
+        echo "Extracted version for Pbuildversion: $VERSION"
         echo "Timestamp: $TIMESTAMP"
         echo "Full unique tag to be created: $UNIQUE_TAG"
+        echo "VERSION: $VERSION"
         
         echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
         echo "RELEASE_TAG=$UNIQUE_TAG" >> $GITHUB_ENV
