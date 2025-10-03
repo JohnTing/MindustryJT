@@ -1,13 +1,13 @@
-name: Create Release and Upload Artifacts
+name: Build and Release from Branch
 
 on:
-  # 當一個 'v' 開頭的 tag 被 push 到儲存庫時觸發
+  # 當一個 'v' 開頭的分支被 push 時觸發
   push:
-    tags:
+    branches:
       - 'v*'
 
 permissions:
-  # 需要 write 權限才能夠建立 Release 並上傳檔案
+  # 需要 write 權限才能夠建立 Tag 和 Release 並上傳檔案
   contents: write
 
 jobs:
@@ -15,55 +15,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      # 使用較新版本的 actions/checkout
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
-      # 使用較新版本的 actions/setup-java
       uses: actions/setup-java@v4
       with:
         java-version: 17
         distribution: 'temurin'
 
-    - name: Extract version number from tag
-      # 從 tag (例如 v7.1-beta) 中，使用正規表達式提取版本號 (例如 7.1)
-      # 並將其存入環境變數 BUILD_VERSION 以供後續步驟使用
+    - name: Extract Version and Tag Name from Branch
+      # 從分支名稱 (例如 v152.2-v1) 中提取資訊
+      # 1. 提取 build version (例如 152.2) 給 Gradle 使用
+      # 2. 儲存完整的分支名稱，作為等等要建立的 Tag 和 Release 的名稱
+      id: extract_vars
       run: |
-        VERSION=$(echo "${{ github.ref_name }}" | sed -n -r 's/^v([0-9]+\.[0-9]+).*/\1/p')
-        echo "Extracted version: $VERSION"
+        BRANCH_NAME="${{ github.ref_name }}"
+        # 我們使用更通用的正規表達式 v([0-9]+\.[0-9]+).* 來匹配 v152.2-v1 這樣的格式
+        VERSION=$(echo "$BRANCH_NAME" | sed -n -r 's/^v([0-9]+\.[0-9]+).*/\1/p')
+        echo "Branch name is: $BRANCH_NAME"
+        echo "Extracted version for build: $VERSION"
+        echo "Tag to be created for release: $BRANCH_NAME"
         echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "RELEASE_TAG=$BRANCH_NAME" >> $GITHUB_ENV
 
     - name: Build JARs and APK with extracted version
       # 執行 gradle 編譯，-Pbuildversion 參數使用我們剛剛提取的版本號
-      # 假設您的 APK build task 是 'android:assembleRelease'
       run: ./gradlew desktop:dist server:dist android:assembleRelease -Pbuildversion=${{ env.BUILD_VERSION }}
 
-    - name: Upload Desktop JAR to Release
-      # 使用 svenstaro/upload-release-action 來上傳產物
-      uses: svenstaro/upload-release-action@v2
+    - name: Create Release and Upload Artifacts
+      # 這個 action 會自動完成以下事情：
+      # 1. 如果儲存庫中不存在名為 ${{ env.RELEASE_TAG }} 的 tag，它會自動建立一個。
+      # 2. 建立一個對應的 GitHub Release。
+      # 3. 將指定的檔案上傳到這個 Release。
+      uses: softprops/action-gh-release@v2
       with:
-        # GITHUB_TOKEN 是由 GitHub Actions 自動提供的，不需額外設定 Secret
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        # 上傳 desktop/build/libs/ 目錄下的 .jar 檔案
-        file: desktop/build/libs/*.jar
-        # 指定要上傳到哪個 tag 的 Release
-        tag: ${{ github.ref }}
-        # 如果 Release 已存在，覆蓋檔案
-        overwrite: true
-
-    - name: Upload Server JAR to Release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: server/build/libs/server-release.jar
-        tag: ${{ github.ref }}
-        overwrite: true
-
-    - name: Upload Android APK to Release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        # 使用 glob 模式來匹配最終生成的 APK 檔案
-        file: android/build/outputs/apk/release/*.apk
-        tag: ${{ github.ref }}
-        overwrite: true
+        # 要建立的 Git Tag 和 Release 的名稱，來自我們的分支名稱
+        tag_name: ${{ env.RELEASE_TAG }}
+        # Release 的標題
+        name: Release ${{ env.RELEASE_TAG }}
+        # 將此版本標記為 "預發行版 (Pre-release)"，因為它來自開發分支
+        prerelease: true
+        # 要上傳的檔案列表，支援 glob 模式
+        files: |
+          desktop/build/libs/*.jar
+          server/build/libs/server-release.jar
+          android/build/outputs/apk/release/*.apk
