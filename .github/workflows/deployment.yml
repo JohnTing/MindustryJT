@@ -1,93 +1,69 @@
-name: Deployment
+name: Create Release and Upload Artifacts
 
 on:
+  # 當一個 'v' 開頭的 tag 被 push 到儲存庫時觸發
   push:
     tags:
       - 'v*'
 
-permissions: {}
+permissions:
+  # 需要 write 權限才能夠建立 Release 並上傳檔案
+  contents: write
+
 jobs:
-  deploy:
-    permissions:
-      contents: write # for release creation (svenstaro/upload-release-action)
-
+  build-and-release:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout repository
+      # 使用較新版本的 actions/checkout
+      uses: actions/checkout@v4
+
     - name: Set up JDK 17
-      uses: actions/setup-java@v1
+      # 使用較新版本的 actions/setup-java
+      uses: actions/setup-java@v4
       with:
         java-version: 17
-    - name: Set env
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: Add Arc release
+        distribution: 'temurin'
+
+    - name: Extract version number from tag
+      # 從 tag (例如 v7.1-beta) 中，使用正規表達式提取版本號 (例如 7.1)
+      # 並將其存入環境變數 BUILD_VERSION 以供後續步驟使用
       run: |
-        git config --global user.email "actions@github.com"
-        git config --global user.name "Github Actions"
-        git clone --depth=1 --branch=master https://github.com/Anuken/Arc ../Arc
-        cd ../Arc
-        git tag ${RELEASE_VERSION}
-        git push https://Anuken:${{ secrets.API_TOKEN_GITHUB }}@github.com/Anuken/Arc ${RELEASE_VERSION};
-        cd ../Mindustry
-    - name: Update JITpack repo
-      run: |
-        cd ../
-        cp -r ./Mindustry ./MindustryJitpack
-        cd MindustryJitpack
-        git config --global user.name "Github Actions"
-        git config --global user.email "actions@github.com"
-        git clone --depth 1 https://github.com/Anuken/MindustryJitpack.git
-        rm -rf .git
-        cp -r ./MindustryJitpack/.git ./.git
-        rm -rf MindustryJitpack
-        rm -rf .github
-        rm README.md
-        git add .
-        git commit --allow-empty -m "Updating"
-        git push https://Anuken:${{ secrets.API_TOKEN_GITHUB }}@github.com/Anuken/MindustryJitpack
-        git tag ${RELEASE_VERSION}
-        git push https://Anuken:${{ secrets.API_TOKEN_GITHUB }}@github.com/Anuken/MindustryJitpack
-        cd ../Mindustry
-    - name: Create artifacts
-      run: |
-        ./gradlew desktop:dist server:dist core:mergedJavadoc -Pbuildversion=${RELEASE_VERSION:1}
-    - name: Update docs
-      run: |
-        cd ../
-        git config --global user.email "cli@github.com"
-        git config --global user.name "Github Actions"
-        git clone --depth=1 https://github.com/MindustryGame/docs.git
-        cd docs
-        find . -maxdepth 1 ! -name ".git" ! -name . -exec rm -r {} \;
-        cd ../
-        cp -a Mindustry/core/build/javadoc/. docs/
-        cd docs
-        git add .
-        git commit --allow-empty -m "Update ${RELEASE_VERSION:1}"
-        git push https://Anuken:${{ secrets.API_TOKEN_GITHUB }}@github.com/MindustryGame/docs
-        cd ../Mindustry
-    - name: Update F-Droid build string
-      run: |
-        git clone --depth=1 --branch=master https://github.com/Anuken/MindustryBuilds ../MindustryBuilds
-        cd ../MindustryBuilds
-        echo "Updating version to ${RELEASE_VERSION:1}"
-        BNUM=$(($GITHUB_RUN_NUMBER + 1000))
-        echo versionName=8-fdroid-${RELEASE_VERSION:1}$'\n'versionCode=${BNUM} > version_fdroid.txt
-        git add .
-        git commit -m "Updating to build ${RELEASE_VERSION:1}"
-        git push https://Anuken:${{ secrets.API_TOKEN_GITHUB }}@github.com/Anuken/MindustryBuilds
-        cd ../Mindustry
-    - name: Upload client artifacts
+        VERSION=$(echo "${{ github.ref_name }}" | sed -n -r 's/^v([0-9]+\.[0-9]+).*/\1/p')
+        echo "Extracted version: $VERSION"
+        echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Build JARs and APK with extracted version
+      # 執行 gradle 編譯，-Pbuildversion 參數使用我們剛剛提取的版本號
+      # 假設您的 APK build task 是 'android:assembleRelease'
+      run: ./gradlew desktop:dist server:dist android:assembleRelease -Pbuildversion=${{ env.BUILD_VERSION }}
+
+    - name: Upload Desktop JAR to Release
+      # 使用 svenstaro/upload-release-action 來上傳產物
       uses: svenstaro/upload-release-action@v2
       with:
+        # GITHUB_TOKEN 是由 GitHub Actions 自動提供的，不需額外設定 Secret
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: desktop/build/libs/Mindustry.jar
+        # 上傳 desktop/build/libs/ 目錄下的 .jar 檔案
+        file: desktop/build/libs/*.jar
+        # 指定要上傳到哪個 tag 的 Release
         tag: ${{ github.ref }}
-    - name: Upload server artifacts
+        # 如果 Release 已存在，覆蓋檔案
+        overwrite: true
+
+    - name: Upload Server JAR to Release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: server/build/libs/server-release.jar
         tag: ${{ github.ref }}
+        overwrite: true
 
+    - name: Upload Android APK to Release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        # 使用 glob 模式來匹配最終生成的 APK 檔案
+        file: android/build/outputs/apk/release/*.apk
+        tag: ${{ github.ref }}
+        overwrite: true
