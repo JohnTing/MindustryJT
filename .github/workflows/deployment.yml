@@ -46,7 +46,7 @@ jobs:
         
         # 為了保持 Release 名稱的完整性，我們可以使用原始分支名
         # 或者您可以自訂一個不含後綴的版本，例如：RELEASE_NAME="Release v${VERSION}"
-        UNIQUE_TAG="Release ${BRANCH_NAME}-${TIMESTAMP}"
+        UNIQUE_TAG="Release-${BRANCH_NAME}-${TIMESTAMP}"
 
         echo "Branch name is: $BRANCH_NAME"
         echo "Extracted version for Pbuildversion: $VERSION"
