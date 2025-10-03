@@ -68,15 +68,10 @@ jobs:
       continue-on-error: true
       # 關鍵修改：
       # --stacktrace: 失敗時顯示完整錯誤堆疊
-      # --scan: 產生詳細的線上建構報告
-      # --develocity-terms-of-service-agree=yes: 在 CI 環境中自動同意條款，確保 build scan 總能生成
       run: >
         ./gradlew android:assembleDebug
         -Pbuildversion=${{ env.BUILD_VERSION }}
         --stacktrace
-        --scan
-        --develocity-terms-of-service-url=https://gradle.com/terms-of-service
-        --develocity-terms-of-service-agree=yes
         
     # 如果 Android 建構失敗，上傳偵錯報告以供分析
     - name: Upload Android Build Reports on Failure
