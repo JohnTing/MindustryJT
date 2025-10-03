@@ -637,7 +637,9 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     public void setBars(){
-        addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        // addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        addBar("health", entity -> new Bar(() -> String.format("%s:%.0f/%.0f", Core.bundle.format("stat.health"), entity.health(), entity.maxHealth())
+        , () -> Pal.health, entity::healthf).blink(Color.white));
 
         if(consPower != null){
             boolean buffered = consPower.buffered;

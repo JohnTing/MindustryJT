@@ -8,6 +8,8 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.ClientLogic;
+import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.core.*;
 import mindustry.entities.units.*;
@@ -58,7 +60,7 @@ public class PowerNode extends PowerBlock{
             PowerModule power = entity.power;
             Building other = world.build(value);
             boolean contains = power.links.contains(value), valid = other != null && other.power != null;
-
+            boolean willPowerGraphSplit = ClientLogic.willPowerGraphSplit(entity);
             if(contains){
                 //unlink
                 power.links.removeValue(value);
@@ -73,7 +75,24 @@ public class PowerNode extends PowerBlock{
                     //create new graph for other end
                     PowerGraph og = new PowerGraph();
                     //reflow from other end
-                    og.reflow(other);
+                    //Vars.ui.showLabel(willPowerGraphSplit + "split power=" + mindustry.ClientLogic.powerUse(other.power.graph), 5f, other.tile.worldx(), other.tile.worldy());
+                    if(arc.Core.settings.getInt("splitpowerwarn", 0) > 0 && 
+                    
+                    (mindustry.ClientLogic.powerUse(other.power.graph) >= arc.Core.settings.getInt("splitpowerwarn", 0))) {
+                        //if(entity.lastAccessed != null) {
+                            if(willPowerGraphSplit) {
+                                
+                                String message = String.format("[%s] split power at (%d, %d)", Strings.stripColors(entity.lastAccessed), 
+                                    entity.tileX(), entity.tileY());
+                                if(Vars.ui.chatfrag.messages.size == 0 || (Vars.ui.chatfrag.messages.size > 0 && !message.equals(Vars.ui.chatfrag.messages.get(0)))) {
+                                    Vars.ui.showLabel(message, 5f, entity.tile.worldx(), entity.tile.worldy());
+                                    Vars.ui.chatfrag.addMessage(message);
+                                    Vars.ui.consolefrag.add(message);
+                                }
+                            }
+                        //}
+                    }
+                    
                 }
             }else if(linkValid(entity, other) && valid && power.links.size < maxNodes){
 

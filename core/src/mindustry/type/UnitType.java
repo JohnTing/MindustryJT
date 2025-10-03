@@ -28,6 +28,7 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.graphics.MultiPacker.*;
+import mindustry.input.Binding;
 import mindustry.logic.*;
 import mindustry.type.ammo.*;
 import mindustry.ui.*;
@@ -648,7 +649,14 @@ public class UnitType extends UnlockableContent implements Senseable{
         table.table(t -> {
             t.left();
             t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
-            t.labelWrap(unit.isPlayer() ? unit.getPlayer().coloredName() + "\n[lightgray]" + localizedName : localizedName).left().width(190f).padLeft(5);
+            // t.labelWrap(unit.isPlayer() ? unit.getPlayer().coloredName() + "\n[lightgray]" + localizedName : localizedName).left().width(190f).padLeft(5);
+            t.labelWrap((unit.isPlayer() ? unit.getPlayer().coloredName() + "\n[lightgray]" + localizedName : localizedName)
+            + String.format("(%d/%d)", unit.team.data().countType(unit.type), Units.getCap(unit.team))
+            ).left().width(190f).padLeft(5);
+
+            if (unit.stack() != null && unit.stack().amount > 0) {
+                t.labelWrap(() -> unit.stack().item.emoji() + " " + (long)unit.stack().amount + "").left().padLeft(0);
+            }
         }).growX().left();
         table.row();
 
@@ -656,7 +664,14 @@ public class UnitType extends UnlockableContent implements Senseable{
             bars.defaults().growX().height(20f).pad(4);
 
             //TODO overlay shields
-            bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+            // bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+
+            bars.add(new Bar(() -> String.format("%s:%.0f/%.0f", Core.bundle.format("stat.health"), unit.health(), unit.maxHealth())
+            ,() -> Pal.health, unit::healthf).blink(Color.white));
+            bars.row();
+            bars.add(new Bar(() -> String.format("%s:%.0f", Core.bundle.format("stat.shieldhealth"), unit.shield())
+            ,() -> Pal.shield, unit::healthf).blink(Color.white));
+
             bars.row();
 
             if(state.rules.unitAmmo){
@@ -1405,6 +1420,28 @@ public class UnitType extends UnlockableContent implements Senseable{
             unit.elevation > 0.5f || (flying && unit.dead) ? (flyingLayer) :
             seg != null ? groundLayer + seg.segmentIndex() / 4000f * Mathf.sign(segmentLayerOrder) + (!segmentLayerOrder ? 0.01f : 0f) :
             groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+
+
+
+        if( arc.Core.settings.getBool("hiddenrender") || (Core.settings.getBool("hiddenrenderonbuild") && Vars.control.input.isPlacing() ) ) {
+            if(!isPayload) {
+
+            Draw.z(Math.min(Layer.darkness, z));
+
+            float e = Mathf.clamp(unit.elevation, shadowElevation, 1f) * shadowElevationScl * (1f - unit.drownTime);
+            float x = unit.x, y = unit.y;
+            Floor floor = world.floorWorld(x, y);
+    
+            float dest = floor.canShadow ? 1f : 0f;
+            //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
+            unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
+            Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha);
+    
+            Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
+            Draw.color();
+            }
+            return;
+        }
 
         if(!isPayload && (unit.isFlying() || shadowElevation > 0)){
             Draw.z(Math.min(Layer.darkness, z - 1f));

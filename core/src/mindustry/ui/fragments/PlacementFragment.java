@@ -352,8 +352,8 @@ public class PlacementFragment{
 
                         //don't refresh unnecessarily
                         //refresh only when the hover state changes, or the displayed block changes
-                        if(wasHovered == isHovered && lastDisplayState == displayState && lastTeam == player.team()) return;
-
+                        // if(wasHovered == isHovered && lastDisplayState == displayState && lastTeam == player.team()) return;
+                        if(wasHovered == isHovered && lastDisplayState == displayState) return;
                         topTable.clear();
                         topTable.top().left().margin(5);
 
@@ -763,6 +763,11 @@ public class PlacementFragment{
 
         //check for a unit
         Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
+        if(unit == null) {
+            unit = Units.closestOverlap(null, Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
+        }
+        
+
         //if cursor has a unit, display it
         if(unit != null) return unit;
 

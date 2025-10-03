@@ -522,6 +522,12 @@ public class SettingsMenuDialog extends BaseDialog{
         if(!mobile){
             Core.settings.put("swapdiagonal", false);
         }
+        graphics.checkPref("hiddenrender", false);
+        graphics.checkPref("hiddenrenderonbuild", false);
+
+
+        graphics.sliderPref("splitpowerwarn", 0, 0, 10000, 100, s -> s == 0 ? "disable": s+"");
+        graphics.sliderPref("removepowerwarn", 0, 0, 10000, 100, s ->  s == 0 ? "disable": s+"");
     }
 
     public void exportData(Fi file) throws IOException{
