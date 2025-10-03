@@ -151,10 +151,9 @@ task run(type: Exec){
 }
 
 if(!project.ext.hasSprites()){
-    /*
     tasks.whenTaskAdded{ task ->
         if(task.name == 'assembleDebug' || task.name == 'assembleRelease'){
             task.dependsOn ":tools:pack"
         }
-    }*/
+    }
 }
