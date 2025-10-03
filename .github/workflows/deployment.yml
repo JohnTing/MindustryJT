@@ -1,4 +1,6 @@
-name: Build and Release from Branch
+# .github/workflows/main-release.yml
+
+name: Build and Release - Main
 
 on:
   # 當一個 'v' 開頭的分支被 push 時觸發
@@ -23,40 +25,93 @@ jobs:
         java-version: 17
         distribution: 'temurin'
 
-    - name: Extract Version and Tag Name from Branch
+    # 最佳實踐：快取 Gradle 相關檔案以加速建構並提高穩定性
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Extract Version, Tag Name, and Timestamp
       id: extract_vars
       run: |
         BRANCH_NAME="${{ github.ref_name }}"
-        VERSION=$(echo "$BRANCH_NAME" | sed -n -r 's/^v([0-9]+\.[0-9]+).*/\1/p')
+        VERSION=$(echo "$BRANCH_NAME" | sed 's/^v//')
+        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+        UNIQUE_TAG="${BRANCH_NAME}-${TIMESTAMP}"
+        
         echo "Branch name is: $BRANCH_NAME"
         echo "Extracted version for build: $VERSION"
-        echo "Tag to be created for release: $BRANCH_NAME"
+        echo "Timestamp: $TIMESTAMP"
+        echo "Full unique tag to be created: $UNIQUE_TAG"
+        
         echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
-        echo "RELEASE_TAG=$BRANCH_NAME" >> $GITHUB_ENV
+        echo "RELEASE_TAG=$UNIQUE_TAG" >> $GITHUB_ENV
 
-    # <<< 修改點 1: 將建置步驟拆分，首先建置必要的 JARs >>>
-    - name: Build JARs (Desktop and Server)
-      # 執行 gradle 編譯，只建置 desktop 和 server
-      # 這個步驟是必要的，如果失敗，整個 job 會失敗
+    - name: Build Desktop and Server JARs
+      # 執行 gradle 編譯，只編譯 desktop 和 server
       run: ./gradlew desktop:dist server:dist -Pbuildversion=${{ env.BUILD_VERSION }}
 
-    # <<< 修改點 2: 獨立建置 Android APK，並允許失敗 >>>
-    - name: Build Android APK (Continue on error)
-      # 獨立建置 Android APK
-      # continue-on-error: true 確保即使此步驟失敗，workflow 仍會繼續
-      continue-on-error: true
-      run: ./gradlew android:assembleRelease -Pbuildversion=${{ env.BUILD_VERSION }}
+    # =================================================================
+    # == Android Build Section (帶有增強的偵錯功能) ==
+    # =================================================================
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
 
-    - name: Create Release and Upload Artifacts
+    - name: Build Android Debug APK
+      id: build_android
+      # 確保即使 Android 建構失敗，workflow 依然繼續執行
+      continue-on-error: true
+      # 關鍵修改：
+      # --stacktrace: 失敗時顯示完整錯誤堆疊
+      # --scan: 產生詳細的線上建構報告
+      # --develocity-terms-of-service-agree=yes: 在 CI 環境中自動同意條款，確保 build scan 總能生成
+      run: >
+        ./gradlew android:assembleDebug
+        -Pbuildversion=${{ env.BUILD_VERSION }}
+        --stacktrace
+        --scan
+        --develocity-terms-of-service-url=https://gradle.com/terms-of-service
+        --develocity-terms-of-service-agree=yes
+        
+    # 如果 Android 建構失敗，上傳偵錯報告以供分析
+    - name: Upload Android Build Reports on Failure
+      # 條件式執行：只有在 'build_android' 步驟失敗時才執行
+      if: steps.build_android.outcome == 'failure'
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-build-reports
+        # Gradle 預設會將 HTML 報告輸出到這個目錄
+        path: android/build/reports/
+        # 報告保留 7 天
+        retention-days: 7
+
+    # =================================================================
+    # == Release Section ==
+    # =================================================================
+    - name: Create Release and Upload JARs
+      id: create_release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ env.RELEASE_TAG }}
         name: Release ${{ env.RELEASE_TAG }}
         prerelease: true
-        # <<< 修改點 3: 新增 fail_on_unmatched_files: false >>>
-        # 這可以防止在找不到 APK 檔案時 (因為 Android build 失敗) 整個 release 步驟失敗
-        fail_on_unmatched_files: false
         files: |
           desktop/build/libs/*.jar
           server/build/libs/server-release.jar
-          android/build/outputs/apk/release/*.apk
+
+    - name: Upload Android Debug APK
+      # 條件式上傳：只有在 Android 建構成功時才執行
+      if: steps.build_android.outcome == 'success'
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ env.RELEASE_TAG }}
+        # Debug APK 的輸出路徑
+        file: android/build/outputs/apk/debug/android-debug.apk
+        # 上傳後的名稱，標記為 debug
+        asset_name: mindustry-android-debug-${{ env.BUILD_VERSION }}.apk
