@@ -42,11 +42,11 @@ jobs:
         BRANCH_NAME="${{ github.ref_name }}"
         # 【關鍵修改】使用正則表達式捕獲組來提取純數字版本號
         VERSION=$(echo "$BRANCH_NAME" | sed -E 's/^v([0-9.]+).*/\1/')
-        TIMESTAMP=$(date +%Y%m%d%H%M%S)
+        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
         
         # 為了保持 Release 名稱的完整性，我們可以使用原始分支名
         # 或者您可以自訂一個不含後綴的版本，例如：RELEASE_NAME="Release v${VERSION}"
-        UNIQUE_TAG="Release-${BRANCH_NAME}-${TIMESTAMP}"
+        UNIQUE_TAG="${BRANCH_NAME}-${TIMESTAMP}"
 
         echo "Branch name is: $BRANCH_NAME"
         echo "Extracted version for Pbuildversion: $VERSION"
@@ -99,6 +99,9 @@ jobs:
       with:
         tag_name: ${{ env.RELEASE_TAG }}
         name: Release ${{ env.RELEASE_TAG }}
+        # 【關鍵修正】指定 Tag 要建立在哪個 commit 上。
+        # github.sha 會指向觸發 workflow 的那個 commit。
+        target_commitish: ${{ github.sha }}
         prerelease: true
         files: |
           desktop/build/libs/*.jar
