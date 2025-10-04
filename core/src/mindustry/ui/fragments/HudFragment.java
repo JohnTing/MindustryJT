@@ -40,6 +40,7 @@ public class HudFragment{
 
     public PlacementFragment blockfrag = new PlacementFragment();
     public CoreItemsDisplay coreItems = new CoreItemsDisplay();
+    
     public boolean shown = true;
 
     private ImageButton flip;

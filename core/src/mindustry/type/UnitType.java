@@ -669,10 +669,12 @@ public class UnitType extends UnlockableContent implements Senseable{
             bars.add(new Bar(() -> String.format("%s:%.0f/%.0f", Core.bundle.format("stat.health"), unit.health(), unit.maxHealth())
             ,() -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
-            bars.add(new Bar(() -> String.format("%s:%.0f", Core.bundle.format("stat.shieldhealth"), unit.shield())
-            ,() -> Pal.shield, unit::healthf).blink(Color.white));
+            if(unit.shield() > 0.1f && unit.shieldAlpha() > 0) {
+                bars.add(new Bar(() -> String.format("%s:%.0f", Core.bundle.format("stat.shieldhealth"), unit.shield())
+                ,() -> Pal.shield, unit::healthf).blink(Color.white));
+                bars.row();
+            }
 
-            bars.row();
 
             if(state.rules.unitAmmo){
                 bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
