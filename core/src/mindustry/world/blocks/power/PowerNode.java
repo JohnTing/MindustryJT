@@ -8,7 +8,6 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.ClientLogic;
 import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.core.*;
@@ -60,7 +59,7 @@ public class PowerNode extends PowerBlock{
             PowerModule power = entity.power;
             Building other = world.build(value);
             boolean contains = power.links.contains(value), valid = other != null && other.power != null;
-            boolean willPowerGraphSplit = ClientLogic.willPowerGraphSplit(entity);
+            boolean willPowerGraphSplit = mindustry.ClientLogic.willPowerGraphSplit(entity);
             if(contains){
                 //unlink
                 power.links.removeValue(value);

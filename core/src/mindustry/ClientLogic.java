@@ -40,6 +40,10 @@ public class ClientLogic {
         return (powerGraph.getLastPowerNeeded() + powerGraph.getLastPowerProduced())*60;
     }
 
+    public static boolean hidddenRender() {
+        return arc.Core.settings.getBool("hiddenrender") || (arc.Core.settings.getBool("hiddenrenderonbuild") && mindustry.Vars.control.input.isPlacing()); 
+    }
+
 /**
      * 檢查移除一個建築後，其所在的電力網絡（PowerGraph）是否會分裂成多個。
      *

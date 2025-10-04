@@ -1163,7 +1163,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
             //Vars.ui.showLabel("remove power="+mindustry.ClientLogic.powerUse(power.graph), 5f, tile.worldx(), tile.worldy());
             if(arc.Core.settings.getInt("removepowerwarn", 0) > 0 && mindustry.ClientLogic.powerUse(power.graph) >= arc.Core.settings.getInt("removepowerwarn", 0)) {
                 
-                if(ClientLogic.willPowerGraphSplit(self())) {
+                if(mindustry.ClientLogic.willPowerGraphSplit(self())) {
                     String message = String.format("[%s] remove power at (%d, %d)", Strings.stripColors(lastBreak), tile.x, tile.y);
                     Vars.ui.showLabel(message, 5f, tile.worldx(), tile.worldy());
                     Vars.ui.chatfrag.addMessage(message);

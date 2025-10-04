@@ -1423,7 +1423,7 @@ public class UnitType extends UnlockableContent implements Senseable{
 
 
 
-        if( arc.Core.settings.getBool("hiddenrender") || (Core.settings.getBool("hiddenrenderonbuild") && Vars.control.input.isPlacing() ) ) {
+        if( mindustry.ClientLogic.hidddenRender()) {
             if(!isPayload) {
 
             Draw.z(Math.min(Layer.darkness, z));
