@@ -1425,7 +1425,7 @@ public class UnitType extends UnlockableContent implements Senseable{
 
 
 
-        if( mindustry.ClientLogic.hidddenRender()) {
+        if( mindustry.CustomClientLogic.hidddenRender()) {
             if(!isPayload) {
 
             Draw.z(Math.min(Layer.darkness, z));

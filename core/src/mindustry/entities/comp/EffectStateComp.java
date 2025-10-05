@@ -17,7 +17,7 @@ abstract class EffectStateComp implements Posc, Drawc, Timedc, Rotc, Childc{
 
     @Override
     public void draw(){
-        if( mindustry.ClientLogic.hidddenRender() ) {
+        if( mindustry.CustomClientLogic.hidddenRender() ) {
             return;
         }
         lifetime = effect.render(id, color, time, lifetime, rotation, x, y, data);

@@ -288,6 +288,8 @@ public class Vars implements Loadable{
 
     public static @Nullable Player player;
 
+    public static CustomClientLogic customClientLogic;
+
     @Override
     public void loadAsync(){
         loadSettings();
@@ -373,6 +375,8 @@ public class Vars implements Loadable{
 
         mods.load();
         maps.load();
+
+        customClientLogic = new CustomClientLogic();
     }
 
     /** Checks if a launch failure occurred.

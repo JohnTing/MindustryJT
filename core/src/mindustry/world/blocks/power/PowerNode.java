@@ -59,7 +59,7 @@ public class PowerNode extends PowerBlock{
             PowerModule power = entity.power;
             Building other = world.build(value);
             boolean contains = power.links.contains(value), valid = other != null && other.power != null;
-            boolean willPowerGraphSplit = mindustry.ClientLogic.willPowerGraphSplit(entity);
+            boolean willPowerGraphSplit = mindustry.CustomClientLogic.willPowerGraphSplit(entity);
             if(contains){
                 //unlink
                 power.links.removeValue(value);
@@ -74,10 +74,10 @@ public class PowerNode extends PowerBlock{
                     //create new graph for other end
                     PowerGraph og = new PowerGraph();
                     //reflow from other end
-                    //Vars.ui.showLabel(willPowerGraphSplit + "split power=" + mindustry.ClientLogic.powerUse(other.power.graph), 5f, other.tile.worldx(), other.tile.worldy());
+                    //Vars.ui.showLabel(willPowerGraphSplit + "split power=" + mindustry.CustomClientLogic.powerUse(other.power.graph), 5f, other.tile.worldx(), other.tile.worldy());
                     if(arc.Core.settings.getInt("splitpowerwarn", 0) > 0 && 
                     
-                    (mindustry.ClientLogic.powerUse(other.power.graph) >= arc.Core.settings.getInt("splitpowerwarn", 0))) {
+                    (mindustry.CustomClientLogic.powerUse(other.power.graph) >= arc.Core.settings.getInt("splitpowerwarn", 0))) {
                         //if(entity.lastAccessed != null) {
                             if(willPowerGraphSplit) {
                                 

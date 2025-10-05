@@ -102,7 +102,7 @@ abstract class FireComp implements Timedc, Posc, Syncc, Drawc{
 
     @Override
     public void draw(){
-        if( mindustry.ClientLogic.hidddenRender() ) {
+        if( mindustry.CustomClientLogic.hidddenRender() ) {
             return;
         }
 

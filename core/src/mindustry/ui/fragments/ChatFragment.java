@@ -47,13 +47,14 @@ public class ChatFragment extends Table{
         font = Fonts.def;
 
         visible(() -> {
+            /*
             if(!net.active() && messages.size > 0){
                 clearMessages();
 
                 if(shown){
                     hide();
                 }
-            }
+            }*/
 
             return ui.hudfrag.shown;
         });
