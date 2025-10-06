@@ -52,18 +52,17 @@ public class CustomClientLogic {
         Unit builder = event.builder;
         Tile tile = event.tile;
         boolean breaking = event.breaking;
-
-        if (!breaking && team == player.team() && builder.getPlayer() != null && builder.buildPlan() != null) {
-
+        Player player = builder.getPlayer();
+        if (player != null && !breaking && team == player.team() && builder.getPlayer() != null && builder.buildPlan() != null) {
 
             Block cblock = builder.buildPlan().block;
             
             // persistent warnings that keep showing
             if (cblock instanceof NuclearReactor && Instant.now().isAfter(lastWarningTime.plusSeconds(handleWarningCooldown))) {
                 lastWarningTime = Instant.now();
-                Player player = builder.getPlayer();
+                
                 float progress = builder.buildPlan().progress;
-                float coreDistance = getDistanceToCore(player.team(), tile.getX(), tile.getY()) /8f;
+                float coreDistance = getDistanceToCore(builder.team(), tile.getX(), tile.getY()) /8f;
                 Vars.ui.showLabel(""+coreDistance, 5f, tile.worldx(), tile.worldy());
                 if(coreDistance < 19) {
                     String message = "[scarlet]WARNING[] " + formatPlayer(player) + " is building a reactor at "
