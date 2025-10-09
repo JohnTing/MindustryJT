@@ -70,7 +70,7 @@ jobs:
     - name: Decode Keystore
       # 根據 build.gradle 的設定，keystore 檔案應位於專案根目錄下的 bekeystore.jks
       # 這個步驟會從 GitHub Secrets 讀取 Base64 字串並還原成檔案
-      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > bekeystore.jks
+      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ../bekeystore.jks
 
     - name: Build Android Release APK
       id: build_android
