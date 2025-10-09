@@ -90,7 +90,7 @@ public class CustomClientLogic {
 
 
     public static float powerUse(PowerGraph powerGraph ) {
-        return (powerGraph.getLastPowerNeeded() + powerGraph.getLastPowerProduced())*60;
+        return (powerGraph.getLastPowerProduced())*60;
     }
 
     public static boolean hidddenRender() {
