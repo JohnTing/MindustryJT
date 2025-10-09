@@ -67,14 +67,25 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Build Android Debug APK
+    - name: Decode Keystore
+      # 根據 build.gradle 的設定，keystore 檔案應位於專案根目錄下的 bekeystore.jks
+      # 這個步驟會從 GitHub Secrets 讀取 Base64 字串並還原成檔案
+      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > bekeystore.jks
+
+    - name: Build Android Release APK
       id: build_android
       # 確保即使 Android 建構失敗，workflow 依然繼續執行
       continue-on-error: true
+      # 透過環境變數傳入 Keystore 密碼，讓 build.gradle 讀取
+      env:
+        keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
+        keystore_alias: ${{ secrets.KEYSTORE_ALIAS }}
+        keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
       # 關鍵修改：
       # --stacktrace: 失敗時顯示完整錯誤堆疊
+      # 執行 assembleRelease 來建置已簽署的正式版 APK
       run: >
-        ./gradlew android:assembleDebug
+        ./gradlew android:assembleRelease
         -Pbuildversion=${{ env.BUILD_VERSION }}
         --stacktrace
         
@@ -107,14 +118,14 @@ jobs:
           desktop/build/libs/*.jar
           server/build/libs/server-release.jar
 
-    - name: Upload Android Debug APK
+    - name: Upload Android Release APK
       # 條件式上傳：只有在 Android 建構成功時才執行
       if: steps.build_android.outcome == 'success'
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ env.RELEASE_TAG }}
-        # Debug APK 的輸出路徑
-        file: android/build/outputs/apk/debug/android-debug.apk
-        # 上傳後的名稱，標記為 debug
-        asset_name: mindustry-android-debug-${{ env.BUILD_VERSION }}.apk
+        # Release APK 的輸出路徑
+        file: android/build/outputs/apk/release/android-release.apk
+        # 上傳後的名稱，標記為 release
+        asset_name: mindustry-android-release-${{ env.BUILD_VERSION }}.apk
