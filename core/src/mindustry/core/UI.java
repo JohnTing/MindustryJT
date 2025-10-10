@@ -740,7 +740,7 @@ public class UI implements ApplicationListener, Loadable{
         return hours + ":" + (modMinute < 10 ? "0" : "") + modMinute + ":" + (modSec < 10 ? "0" : "") + modSec;
     }
 
-    public static String formatAmount(long number){
+    public static String formatAmount_old(long number){
         //prevent things like bars displaying erroneous representations of casted infinities
         if(number == Long.MAX_VALUE) return "∞";
         if(number == Long.MIN_VALUE) return "-∞";
@@ -755,6 +755,26 @@ public class UI implements ApplicationListener, Loadable{
             return number / 1000 + "[gray]" + thousands + "[]";
         }else if(mag >= 1000){
             return sign + Strings.fixed(mag / 1000f, 1) + "[gray]" + thousands + "[]";
+        }else{
+            return number + "";
+        }
+    }
+
+        public static String formatAmount(long number){
+        //prevent things like bars displaying erroneous representations of casted infinities
+        if(number == Long.MAX_VALUE) return "∞";
+        if(number == Long.MIN_VALUE) return "-∞";
+
+        long mag = Math.abs(number);
+        String sign = number < 0 ? "-" : "";
+        if(mag >= 1_000_000_000){
+            return String.format("%.2f[gray]%s[]", number/1_000_000_000f, billions);
+        }else if(mag >= 1_000_000){
+            return String.format("%.2f[gray]%s[]", number/1_000_000f, millions);
+        }else if(mag >= 10_000){
+            return String.format("%.1f[gray]%s[]", number/1000f, thousands);
+        }else if(mag >= 1000){
+            return String.format("%.2f[gray]%s[]", number/1000f, thousands);
         }else{
             return number + "";
         }

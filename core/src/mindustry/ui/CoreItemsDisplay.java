@@ -120,8 +120,14 @@ public class CoreItemsDisplay extends Table {
                         prefix = " ([scarlet]" + UI.formatAmount(delta) + "[])";
                     }
                     
+                    String full = "";
+                    // if item is almost full
+                    if(  UI.formatAmount(core.storageCapacity).equals( UI.formatAmount(core.items.get(currentItem))) ) {
+                        full = "[acid]";
+                    }
+
                     // 組合字串：箭頭 + 格式化後的數量
-                    return UI.formatAmount(core.items.get(currentItem)) + prefix;
+                    return full+ UI.formatAmount(core.items.get(currentItem)) + "[]" + prefix;
                 }).padRight(3).minWidth(52f).left().tooltip(t -> t.background(Styles.black6).margin(4f).label(() -> {
                     if (core == null) return "0";
                     

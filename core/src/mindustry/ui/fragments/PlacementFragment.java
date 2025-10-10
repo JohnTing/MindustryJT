@@ -440,15 +440,20 @@ public class PlacementFragment{
                             }
                             if(hoverTile != null) {
                                 topTable.row();
-                                Block toDisplay =
-                                    hoverTile.overlay().itemDrop != null || hoverTile.wallDrop() != null ? hoverTile.overlay() :
-                                    hoverTile.floor();
-
+                                Block display = null;
+                                    if(hoverTile.overlay().itemDrop != null) {
+                                        display = hoverTile.overlay();
+                                    } else {
+                                        display = hoverTile.floor();
+                                    }
+                                    Block toDisplay = display;
+                                
                                 topTable.table(t -> {
                                     t.left();
                                     t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
                                     t.labelWrap(toDisplay.localizedName).left().width(190f).padLeft(5);
                                 }).growX().left();
+
                             }
                         }
                     });
