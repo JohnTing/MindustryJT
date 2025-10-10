@@ -443,6 +443,9 @@ public class PlacementFragment{
                                 Block display = null;
                                     if(hoverTile.overlay().itemDrop != null) {
                                         display = hoverTile.overlay();
+                                    }
+                                    else if(hoverTile.wallDrop() != null) {
+                                        display = hoverTile.block();
                                     } else {
                                         display = hoverTile.floor();
                                     }
