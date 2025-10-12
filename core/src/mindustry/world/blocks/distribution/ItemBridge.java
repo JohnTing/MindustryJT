@@ -364,6 +364,20 @@ public class ItemBridge extends Block{
         public void draw(){
             super.draw();
 
+            //draw each item this bridge have
+            if(items != null && mindustry.CustomClientLogic.hiddenItemTransparency > 0){
+                Draw.z(Layer.power + 0.1f);
+                Draw.color(Color.white, mindustry.CustomClientLogic.hiddenItemTransparency / 100f);
+                int loti = 0;
+                for(int iid = 0; iid < items.length(); iid++){
+                    for(int itemid = 1; itemid <= items.get(iid); itemid++){
+                        Draw.rect(content.item(iid).fullIcon,
+                        x, y - tilesize / 2f + 1f + 0.6f * (float)(loti++), 4f, 4f
+                        );
+                    }
+                }
+            }
+
             Draw.z(Layer.power);
 
             Tile other = world.tile(link);
