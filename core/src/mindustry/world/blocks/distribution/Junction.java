@@ -1,7 +1,12 @@
 package mindustry.world.blocks.distribution;
 
+import arc.graphics.*;
+import arc.graphics.g2d.*;
+import arc.math.*;
+import arc.math.geom.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.graphics.*;
 import mindustry.gen.*;
 import mindustry.type.*;
 import mindustry.world.*;
@@ -87,6 +92,30 @@ public class Junction extends Block{
             Building to = nearby(relative);
             return to != null && to.team == team;
         }
+
+        @Override
+        public void draw(){
+            super.draw();
+            if(mindustry.CustomClientLogic.hiddenItemTransparency > 0){
+                Draw.z(Layer.power + 0.1f);
+                Draw.color(Color.white, mindustry.CustomClientLogic.hiddenItemTransparency / 100f);
+                for(int dir = 0; dir < 4; dir++){
+                    float
+                    endx = x + Geometry.d4(dir).x * tilesize / 2f + Geometry.d4(dir + 1).x * tilesize / 4f,
+                    endy = y + Geometry.d4(dir).y * tilesize / 2f + Geometry.d4(dir + 1).y * tilesize / 4f,
+                    begx = x - Geometry.d4(dir).x * tilesize / 4f + Geometry.d4(dir + 1).x * tilesize / 4f,
+                    begy = y - Geometry.d4(dir).y * tilesize / 4f + Geometry.d4(dir + 1).y * tilesize / 4f;
+
+                    Item item;
+                    for(int i = 0; (item = buffer.getItem(dir, i)) != null; i++){
+                        float time = buffer.getTime(dir, i);
+                        float p = Math.min(((Time.time - time) * timeScale / speed), (float)(capacity - i) / capacity);
+                        Draw.rect(item.fullIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
+                    }
+                }
+            }
+        }
+
 
         @Override
         public byte version(){

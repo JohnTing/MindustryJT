@@ -36,6 +36,10 @@ import mindustry.world.blocks.power.PowerNode;
 import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 
 public class CustomClientLogic {
+
+    public static int hiddenItemTransparency = 50;
+
+
     CustomClientLogic() {
         init();
     }
@@ -63,7 +67,7 @@ public class CustomClientLogic {
                 
                 float progress = builder.buildPlan().progress;
                 float coreDistance = getDistanceToCore(builder.team(), tile.getX(), tile.getY()) /8f;
-                Vars.ui.showLabel(""+coreDistance, 5f, tile.worldx(), tile.worldy());
+                // Vars.ui.showLabel(""+coreDistance, 5f, tile.worldx(), tile.worldy());
                 if(coreDistance < 19) {
                     String message = "[scarlet]WARNING[] " + formatPlayer(player) + " is building a reactor at "
                             + formatTile(tile) + " [stat]" + Math.round(coreDistance) + "[] blocks from core. [stat]"
