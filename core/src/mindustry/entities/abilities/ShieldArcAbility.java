@@ -1,5 +1,6 @@
 package mindustry.entities.abilities;
 
+import arc.Core;
 import arc.audio.*;
 import arc.func.*;
 import arc.graphics.*;
@@ -208,6 +209,7 @@ public class ShieldArcAbility extends Ability{
 
     @Override
     public void displayBars(Unit unit, Table bars){
-        bars.add(new Bar("stat.shieldhealth", Pal.accent, () -> data / max)).row();
+        bars.add(new Bar(() -> String.format("%s:%.0f/%.0f", Core.bundle.format("stat.shieldhealth"), data, max), 
+        () -> Pal.accent, () -> data / max)).row();
     }
 }

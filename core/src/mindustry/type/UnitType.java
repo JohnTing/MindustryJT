@@ -666,15 +666,10 @@ public class UnitType extends UnlockableContent implements Senseable{
             //TODO overlay shields
             // bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
 
-            bars.add(new Bar(() -> String.format("%s:%.0f/%.0f", Core.bundle.format("stat.health"), unit.health(), unit.maxHealth())
+            bars.add(new Bar(() -> String.format("%s:%.0f%s", Core.bundle.format("stat.health"), unit.health(), 
+            unit.shield() > 0.1f ? "(+" + UI.formatAmountLow(unit.shield()) + ")" : "")
             ,() -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
-            if(unit.shield() > 0.1f && unit.shieldAlpha() > 0) {
-                bars.add(new Bar(() -> String.format("%s:%d", Core.bundle.format("stat.shieldhealth"), UI.formatAmount(Mathf.floor(unit.shield())) )
-                ,() -> Pal.shield, () -> Math.min(1, unit.shield() / unit.maxHealth()) ).blink(Color.white));
-                bars.row();
-            }
-
 
             if(state.rules.unitAmmo){
                 bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
