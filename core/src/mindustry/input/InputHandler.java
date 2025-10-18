@@ -666,6 +666,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 return;
             }
         }
+        mindustry.CustomClientLogic.handleConfigEvent(player, build, value);
         build.configured(player == null || player.dead() ? null : player.unit(), value);
         Events.fire(new ConfigEvent(build, player, value));
     }

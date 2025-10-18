@@ -1,8 +1,5 @@
 package mindustry;
 
-import static mindustry.Vars.player;
-import static mindustry.Vars.ui;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,8 +16,10 @@ import arc.math.geom.Point2;
 import arc.struct.IntSeq;
 import arc.struct.ObjectSet;
 import arc.struct.Seq;
+import arc.util.Nullable;
 import arc.util.Strings;
 import mindustry.core.NetClient;
+import mindustry.core.UI;
 import mindustry.core.World;
 import mindustry.game.EventType.BuildSelectEvent;
 import mindustry.game.EventType.ConfigEvent;
@@ -31,10 +30,12 @@ import mindustry.gen.Unit;
 import mindustry.world.Block;
 import mindustry.world.Tile;
 import mindustry.world.blocks.power.NuclearReactor;
+import mindustry.world.blocks.power.PowerBlock;
 import mindustry.world.blocks.power.PowerGraph;
 import mindustry.world.blocks.power.PowerNode;
+import mindustry.world.blocks.power.PowerNode.PowerNodeBuild;
 import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
-
+// mindustry.CustomClientLogic
 public class CustomClientLogic {
 
     public static int hiddenItemTransparency = 50;
@@ -45,6 +46,8 @@ public class CustomClientLogic {
     }
     void init() {
         Events.on(BuildSelectEvent.class, this::handleBuildSelectEvent);
+        
+
     }
     
     private Instant lastWarningTime = Instant.now();
@@ -77,17 +80,87 @@ public class CustomClientLogic {
                     
                 }
             }
-            /*
-            if (cblock instanceof NuclearReactor) {
-                String message = "[lightgray]Notice[] " + formatPlayer(player) + " is building a reactor at "
-                        + formatTile(tile) + "[stat]" + Math.round(progress * 100) + "%";
-                sendMessage(message);
-            }*/
+        }
+    }
+    static public void handlebeginBreakEvent(@Nullable Unit unit, Team team, int x, int y) {
+
+        if(arc.Core.settings.getInt("removepowerwarn", 0) <= 0) {
+            return;
+        }
+        Tile tile = Vars.world.tileBuilding(x, y);
+        if(tile.build.block instanceof PowerBlock) {
+            if(unit != null && unit.getPlayer() != null && unit.getPlayer().team().id == team.id) {
+                int splitPower = Mathf.floor(tile.build.power.graph.getPowerProduced() * 60 );
+                if(splitPower >= arc.Core.settings.getInt("removepowerwarn", 0)) {
+                    if(mindustry.CustomClientLogic.willPowerGraphSplit(tile.build)) {
+                        String message = String.format("[%s] remove power (%s) at (%d, %d)", Strings.stripColors(unit.getPlayer().name), UI.formatAmount(splitPower), tile.x, tile.y);
+                        Vars.ui.showLabel(message, 10f, tile.worldx(), tile.worldy());
+                        Vars.ui.chatfrag.addMessage(message);
+                        Vars.ui.consolefrag.add(message);
+                        
+                    }
+                }
+            }
         }
     }
 
-        public boolean sendMessage(String message) {
-            ui.chatfrag.addMessage(message);
+    static public void handleConfigEvent(@Nullable Player player, Building build, @Nullable Object value) {
+
+        if(player == null || build == null || value == null) {
+            return;
+        }
+        if(arc.Core.settings.getInt("splitpowerwarn", 0) <= 0) {
+            return;
+        }
+        
+
+        if(value instanceof Point2[] values) {
+            /*
+            Vars.ui.chatfrag.addMessage("length" + values.length);
+            for (Point2 point2 : values) {
+                Vars.ui.chatfrag.addMessage(point2.toString());
+                Vars.ui.showLabel(point2.toString(), 10f, build.tile.worldx()+point2.x*Vars.tilesize, build.tile.worldy()+point2.y*Vars.tilesize);
+            }*/
+            if(values.length == 0) {
+                if(build.block instanceof PowerNode) {
+                    if(player.team().id == build.team.id) {
+                        int splitPower = Mathf.floor(build.power.graph.getPowerProduced() * 60) ;
+                        if(splitPower >= arc.Core.settings.getInt("splitpowerwarn", 0)) {
+                            if(mindustry.CustomClientLogic.willPowerGraphSplit(build)) {
+                                String message = String.format("[%s] split power (%s) at (%d, %d)", 
+                                Strings.stripColors(player.name), UI.formatAmount(splitPower), build.tile.x, build.tile.y);
+                                Vars.ui.showLabel(message, 10f, build.tile.worldx(), build.tile.worldy());
+                                Vars.ui.chatfrag.addMessage(message);
+                                Vars.ui.consolefrag.add(message);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if(value instanceof Integer valuei) {
+            Building other = Vars.world.build(valuei);
+            if(build.block instanceof PowerNode && other != null) {
+                if(player.team().id == build.team.id) {
+                    int splitPower = Mathf.floor(build.power.graph.getPowerProduced() * 60) ;
+                    if(splitPower >= arc.Core.settings.getInt("splitpowerwarn", 0)) {
+                        if(mindustry.CustomClientLogic.willPowerGraphSplitOther(build, other)) {
+                            String message = String.format("[%s] split power (%s) at (%d, %d)", 
+                            Strings.stripColors(player.name), UI.formatAmount(splitPower), build.tile.x, build.tile.y);
+                            Vars.ui.showLabel(message, 10f, build.tile.worldx(), build.tile.worldy());
+                            Vars.ui.chatfrag.addMessage(message);
+                            Vars.ui.consolefrag.add(message);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    
+    public boolean sendMessage(String message) {
+            Vars.ui.chatfrag.addMessage(message);
         return true;
     }
 
@@ -162,6 +235,68 @@ public class CustomClientLogic {
         // 如果所有鄰居都能互相到達，則電網不會分裂
         return false;
     }
+
+
+    /**
+     * 檢查移除兩個建築之間的直接電源連線後，電力網絡（PowerGraph）是否會因此分裂。
+     *
+     * @param buildingA 連線的一端。
+     * @param buildingB 連線的另一端。
+     * @return 如果移除這條連線會導致分裂，返回 true；否則返回 false。
+     */
+    public static boolean willPowerGraphSplitOther(Building buildingA, Building buildingB) {
+        // 1. 基本檢查：如果 A 和 B 原本就沒有直接相連，移除一個不存在的連線不會造成任何影響。
+        buildingA.getPowerConnections(outArray1);
+        if (!outArray1.contains(buildingB)) {
+            return false; // 它們之間沒有直接連線，所以不會分裂
+        }
+        
+        // 核心思想：從 A 開始進行圖遍歷（例如 BFS），
+        // 看看在不經過「A 到 B」這條捷徑的情況下，是否還能到達 B。
+
+        visited.clear();
+        queue.clear();
+
+        queue.add(buildingA);
+        visited.add(buildingA);
+
+        while (!queue.isEmpty()) {
+            Building current = queue.poll();
+
+            // 遍歷當前節點的所有鄰居
+            current.getPowerConnections(outArray1);
+            for (Building next : outArray1) {
+
+                // 關鍵：模擬 A 和 B 之間的連線被移除。
+                // 我們只禁止從 A 直接走到 B。
+                // 因為我們從 A 開始搜索，所以只需要檢查這一個方向。
+                if (current.equals(buildingA) && next.equals(buildingB)) {
+                    continue; // 跳過這條被"移除"的路徑
+                }
+
+                // 如果我們找到了另一條通往 B 的路徑
+                if (next.equals(buildingB)) {
+                    // 找到了替代路徑！這意味著即使移除直接連線，A 和 B 仍然連通。
+                    // 所以電網不會分裂。
+                    return false;
+                }
+
+                // 如果 next 節點尚未被訪問過
+                if (!visited.contains(next)) {
+                    visited.add(next);
+                    queue.add(next);
+                }
+            }
+        }
+
+        // 3. 遍歷結束後，如果從未通過其他路徑到達 B，
+        // 這表示 A 和 B 之間的直接連線是它們唯一的橋樑。
+        // 移除它將會導致電網分裂。
+        return true;
+    }
+
+
+
 
     public float getDistanceToCore(Team team, float x, float y) {
 

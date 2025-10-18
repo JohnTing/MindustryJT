@@ -1158,20 +1158,6 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     public void powerGraphRemoved(){
         if(power == null) return;
 
-        if(this.block instanceof PowerBlock && lastBreak != null) {
-
-            //Vars.ui.showLabel("remove power="+mindustry.CustomClientLogic.powerUse(power.graph), 5f, tile.worldx(), tile.worldy());
-            if(arc.Core.settings.getInt("removepowerwarn", 0) > 0 && mindustry.CustomClientLogic.powerUse(power.graph) >= arc.Core.settings.getInt("removepowerwarn", 0)) {
-                
-                if(mindustry.CustomClientLogic.willPowerGraphSplit(self())) {
-                    String message = String.format("[%s] remove power at (%d, %d)", Strings.stripColors(lastBreak), tile.x, tile.y);
-                    Vars.ui.showLabel(message, 5f, tile.worldx(), tile.worldy());
-                    Vars.ui.chatfrag.addMessage(message);
-                    Vars.ui.consolefrag.add(message);
-                }
-            }
-        }
-
         power.graph.remove(self());
         for(int i = 0; i < power.links.size; i++){
             Tile other = world.tile(power.links.get(i));
@@ -1181,6 +1167,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         }
         power.links.clear();
     }
+
     public boolean conductsTo(Building other){
         return !block.insulated;
     }

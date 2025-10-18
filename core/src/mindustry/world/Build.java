@@ -26,7 +26,7 @@ public class Build{
         if(!validBreak(team, x, y)){
             return;
         }
-
+        mindustry.CustomClientLogic.handlebeginBreakEvent(unit, team, x, y);
         Tile tile = world.tileBuilding(x, y);
         //this should never happen, but it doesn't hurt to check for links
         float prevPercent = 1f;
