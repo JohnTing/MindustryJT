@@ -670,8 +670,8 @@ public class UnitType extends UnlockableContent implements Senseable{
             ,() -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
             if(unit.shield() > 0.1f && unit.shieldAlpha() > 0) {
-                bars.add(new Bar(() -> String.format("%s:%.0f", Core.bundle.format("stat.shieldhealth"), unit.shield())
-                ,() -> Pal.shield, unit::healthf).blink(Color.white));
+                bars.add(new Bar(() -> String.format("%s:%d", Core.bundle.format("stat.shieldhealth"), UI.formatAmount(Mathf.floor(unit.shield())) )
+                ,() -> Pal.shield, () -> Math.min(1, unit.shield() / unit.maxHealth()) ).blink(Color.white));
                 bars.row();
             }
 
