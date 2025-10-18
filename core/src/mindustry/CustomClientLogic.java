@@ -38,17 +38,17 @@ import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 // mindustry.CustomClientLogic
 public class CustomClientLogic {
 
-    public static int hiddenItemTransparency = 50;
-
-
     CustomClientLogic() {
         init();
     }
     void init() {
         Events.on(BuildSelectEvent.class, this::handleBuildSelectEvent);
-        
-
     }
+
+    static public int getHiddenItemTransparency() {
+        return Core.settings.getInt("hiddenItemTransparency", 50);
+    }
+
     
     private Instant lastWarningTime = Instant.now();
     private int handleWarningCooldown = 3;

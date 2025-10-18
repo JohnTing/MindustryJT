@@ -365,9 +365,9 @@ public class ItemBridge extends Block{
             super.draw();
 
             //draw each item this bridge have
-            if(items != null && mindustry.CustomClientLogic.hiddenItemTransparency > 0){
+            if(items != null && mindustry.CustomClientLogic.getHiddenItemTransparency() > 0){
                 Draw.z(Layer.power + 0.1f);
-                Draw.color(Color.white, mindustry.CustomClientLogic.hiddenItemTransparency / 100f);
+                Draw.color(Color.white, mindustry.CustomClientLogic.getHiddenItemTransparency() / 100f);
                 int loti = 0;
                 for(int iid = 0; iid < items.length(); iid++){
                     for(int itemid = 1; itemid <= items.get(iid); itemid++){

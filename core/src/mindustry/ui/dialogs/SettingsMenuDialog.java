@@ -525,7 +525,8 @@ public class SettingsMenuDialog extends BaseDialog{
         graphics.checkPref("hiddenrender", false);
         graphics.checkPref("hiddenrenderonbuild", true);
 
-
+        
+        graphics.sliderPref("hiddenItemTransparency", 50, 0, 100, 10, s -> s == 0 ? "disable": s+"%");
         graphics.sliderPref("splitpowerwarn", 0, 100, 10000, 100, s -> s == 0 ? "disable": s+"");
         graphics.sliderPref("removepowerwarn", 0, 100, 10000, 100, s ->  s == 0 ? "disable": s+"");
     }

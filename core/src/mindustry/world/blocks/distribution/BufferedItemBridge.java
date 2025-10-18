@@ -62,7 +62,7 @@ public class BufferedItemBridge extends ItemBridge{
         public void draw(){
             super.draw();
 
-            if(mindustry.CustomClientLogic.hiddenItemTransparency > 0){
+            if(mindustry.CustomClientLogic.getHiddenItemTransparency() > 0){
                 Draw.z(Layer.power + 0.1f);
                 Tile other = world.tile(link);
 
@@ -90,7 +90,7 @@ public class BufferedItemBridge extends ItemBridge{
                     float time = buffer.getTime(i);
                     float p = Math.min(((Time.time - time) * timeScale / speed), (float)(bufferCapacity - i) / bufferCapacity);
 
-                    Draw.alpha(mindustry.CustomClientLogic.hiddenItemTransparency / 100f);
+                    Draw.alpha(mindustry.CustomClientLogic.getHiddenItemTransparency() / 100f);
                     Draw.rect(item.fullIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
                 }
             }

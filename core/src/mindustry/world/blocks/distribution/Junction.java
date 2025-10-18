@@ -96,9 +96,9 @@ public class Junction extends Block{
         @Override
         public void draw(){
             super.draw();
-            if(mindustry.CustomClientLogic.hiddenItemTransparency > 0){
+            if(mindustry.CustomClientLogic.getHiddenItemTransparency() > 0){
                 Draw.z(Layer.power + 0.1f);
-                Draw.color(Color.white, mindustry.CustomClientLogic.hiddenItemTransparency / 100f);
+                Draw.color(Color.white, mindustry.CustomClientLogic.getHiddenItemTransparency() / 100f);
                 for(int dir = 0; dir < 4; dir++){
                     float
                     endx = x + Geometry.d4(dir).x * tilesize / 2f + Geometry.d4(dir + 1).x * tilesize / 4f,
