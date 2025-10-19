@@ -54,10 +54,18 @@ public class CustomClientLogic {
     private int handleWarningCooldown = 3;
     
     public void handleBuildSelectEvent(BuildSelectEvent event) {
+        if(event == null) {
+            return;
+        }
 
         Team team = event.team;
         Unit builder = event.builder;
         Tile tile = event.tile;
+        if(team == null || builder == null || tile == null) {
+            return;
+        }
+
+
         boolean breaking = event.breaking;
         Player player = builder.getPlayer();
         if (player != null && !breaking && team == player.team() && builder.getPlayer() != null && builder.buildPlan() != null) {
@@ -84,11 +92,15 @@ public class CustomClientLogic {
     }
     static public void handlebeginBreakEvent(@Nullable Unit unit, Team team, int x, int y) {
 
+        if(unit == null || team == null) {
+            return;
+        }
+
         if(arc.Core.settings.getInt("removepowerwarn", 0) <= 0) {
             return;
         }
         Tile tile = Vars.world.tileBuilding(x, y);
-        if(tile.build.block instanceof PowerBlock) {
+        if(tile != null && tile.build != null && tile.build.block instanceof PowerBlock) {
             if(unit != null && unit.getPlayer() != null && unit.getPlayer().team().id == team.id) {
                 int splitPower = Mathf.floor(tile.build.power.graph.getPowerProduced() * 60 );
                 if(splitPower >= arc.Core.settings.getInt("removepowerwarn", 0)) {
