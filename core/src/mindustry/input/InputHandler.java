@@ -1948,13 +1948,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     public @Nullable Unit selectedUnit(){
 
-        // select building first
+        // select building only
         if(mindustry.CustomClientLogic.hidddenRender()) {
             Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
             // if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
             if(build instanceof ControlBlock cont && cont.canControl() && cont.unit() != player.unit() && cont.unit().isAI()){
                 return cont.unit();
             }
+            return null;
         }
 
         Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.playerControllable());
