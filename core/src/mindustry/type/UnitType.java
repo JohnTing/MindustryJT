@@ -1439,19 +1439,34 @@ public class UnitType extends UnlockableContent implements Senseable{
         if( mindustry.CustomClientLogic.hidddenRender()) {
             if(!isPayload) {
 
-            Draw.z(Math.min(Layer.darkness, z));
+                Draw.z(Math.min(Layer.darkness, z));
 
-            float e = Mathf.clamp(unit.elevation, shadowElevation, 1f) * shadowElevationScl * (1f - unit.drownTime);
-            float x = unit.x, y = unit.y;
-            Floor floor = world.floorWorld(x, y);
-    
-            float dest = floor.canShadow ? 1f : 0f;
-            //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
-            unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
-            Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha);
-    
-            Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
-            Draw.color();
+                float e = Mathf.clamp(unit.elevation, shadowElevation, 1f) * shadowElevationScl * (1f - unit.drownTime);
+                float x = unit.x, y = unit.y;
+                Floor floor = world.floorWorld(x, y);
+        
+                float dest = floor.canShadow ? 1f : 0f;
+                //yes, this updates state in draw()... which isn't a problem, because I don't want it to be obvious anyway
+                unit.shadowAlpha = unit.shadowAlpha < 0 ? dest : Mathf.approachDelta(unit.shadowAlpha, dest, 0.11f);
+                // Draw.color(Pal.shadow, Pal.shadow.a * unit.shadowAlpha);
+                Draw.color(unit.team.color, Pal.shadow.a * unit.shadowAlpha);
+        
+                Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
+
+                if(this instanceof mindustry.type.unit.MissileUnitType missile) {
+                    if(missile.weapons.size > 0) {
+                        if( mindustry.CustomClientLogic.hidddenRender()) {
+                            Draw.color(unit.team.color);
+                            if(unit.x > 0 && unit.y > 0) {
+                                Lines.circle(unit.x, unit.y, (missile.weapons.get(0).bullet.splashDamage)/20);
+                                Lines.arc(unit.x, unit.y, (missile.weapons.get(0).bullet.damage)/20, 3, unit.rotation - 90);
+                            }
+                            Draw.reset();
+                            return;
+                        }
+                    }
+                }
+                Draw.color();
             }
             return;
         }

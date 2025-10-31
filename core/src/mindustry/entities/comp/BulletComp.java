@@ -312,7 +312,8 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
         if( mindustry.CustomClientLogic.hidddenRender() ) {
             Draw.color(this.team.color);
             if(this.x > 0 && this.y > 0) {
-                Lines.circle(this.x, this.y, (this.damage)/20);
+                Lines.circle(this.x, this.y, (type.splashDamage)/20);
+                Lines.poly(this.x, this.y, 3, (type.damage)/20, this.rotation);
             }
             Draw.reset();
             return;
