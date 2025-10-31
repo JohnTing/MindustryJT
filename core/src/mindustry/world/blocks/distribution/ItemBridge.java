@@ -56,7 +56,7 @@ public class ItemBridge extends Block{
         allowDiagonal = false;
         copyConfig = false;
         //disabled as to not be annoying
-        allowConfigInventory = false;
+        allowConfigInventory = true;
         priority = TargetPriority.transport;
 
         //point2 config is relative
@@ -363,6 +363,20 @@ public class ItemBridge extends Block{
         @Override
         public void draw(){
             super.draw();
+
+            //draw each item this bridge have
+            if(items != null && mindustry.CustomClientLogic.getHiddenItemTransparency() > 0){
+                Draw.z(Layer.power + 0.1f);
+                Draw.color(Color.white, mindustry.CustomClientLogic.getHiddenItemTransparency() / 100f);
+                int loti = 0;
+                for(int iid = 0; iid < items.length(); iid++){
+                    for(int itemid = 1; itemid <= items.get(iid); itemid++){
+                        Draw.rect(content.item(iid).fullIcon,
+                        x, y - tilesize / 2f + 1f + 0.6f * (float)(loti++), 4f, 4f
+                        );
+                    }
+                }
+            }
 
             Draw.z(Layer.power);
 

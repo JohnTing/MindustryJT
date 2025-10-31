@@ -441,6 +441,9 @@ public class DesktopInput extends InputHandler{
             if(Core.input.keyTap(Binding.toggleBlockStatus)){
                 Core.settings.put("blockstatus", !Core.settings.getBool("blockstatus"));
             }
+            if(Core.input.keyTap(Binding.toggleHiddenRender)){
+                Core.settings.put("hiddenrender", !Core.settings.getBool("hiddenrender"));
+            }
 
             if(Core.input.keyTap(Binding.togglePowerLines)){
                 if(Core.settings.getInt("lasersopacity") == 0){

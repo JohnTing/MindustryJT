@@ -277,12 +277,20 @@ public class UnitFactory extends UnitBlock{
                     commands.clear();
                     commands.background(null);
                     var unit = unit();
-                    if(unit != null && canSetCommand()){
+                    // if(unit != null && canSetCommand()){
+                    if(canSetCommand()){
                         commands.background(Styles.black6);
                         var group = new ButtonGroup<ImageButton>();
                         group.setMinCheckCount(0);
-                        int i = 0, columns = Mathf.clamp(units.size, 2, selectionColumns);
-                        var list = unit.commands;
+                        int i = 0, columns = Mathf.clamp(units.size, 4, selectionColumns);
+                        //var list = unit.commands;
+
+                        UnitCommand[] arr = new UnitCommand[]
+                        {UnitCommand.moveCommand, UnitCommand.repairCommand, UnitCommand.rebuildCommand, UnitCommand.assistCommand, UnitCommand.mineCommand, 
+                            UnitCommand.boostCommand, UnitCommand.enterPayloadCommand, UnitCommand.loadUnitsCommand, 
+                            UnitCommand.loadBlocksCommand, UnitCommand.unloadPayloadCommand, UnitCommand.loopPayloadCommand};
+                        Seq<UnitCommand> list = new Seq<UnitCommand>();
+                        list.add(arr);
 
                         commands.image(Tex.whiteui, Pal.gray).height(4f).growX().colspan(columns).row();
 
@@ -291,7 +299,8 @@ public class UnitFactory extends UnitBlock{
                                 configure(item);
                             }).tooltip(item.localized()).group(group).get();
 
-                            button.update(() -> button.setChecked(command == item || (command == null && unit.defaultCommand == item)));
+                            button.update(() -> button.setChecked(command == item || 
+                            (command == null && (unit != null && unit.defaultCommand == item))));
 
                             if(++i % columns == 0){
                                 commands.row();

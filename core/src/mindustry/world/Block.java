@@ -652,18 +652,27 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     public void setBars(){
-        addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        // addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        addBar("health", entity -> new Bar(() -> String.format("%s:%.0f/%.0f", Core.bundle.format("stat.health"), entity.health(), entity.maxHealth())
+        , () -> Pal.health, entity::healthf).blink(Color.white));
 
         if(consPower != null){
             boolean buffered = consPower.buffered;
             float capacity = consPower.capacity;
 
+            /*
             addBar("power", entity -> new Bar(
                 () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
                 Core.bundle.get("bar.power"),
                 () -> Pal.powerBar,
                 () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
-            );
+            );*/
+            addBar("power", entity -> new Bar(() ->
+            Core.bundle.format("bar.powerbalance",
+                    ((entity.power.graph.getPowerBalance() >= 0 ? "+" : "") + UI.formatAmount((long)(entity.power.graph.getPowerBalance() * 60)))),
+                    () -> Pal.powerBar,
+                    () -> Mathf.clamp(entity.power.graph.getLastPowerProduced() / entity.power.graph.getLastPowerNeeded())
+                ));
         }
 
         if(hasItems && configurable){
