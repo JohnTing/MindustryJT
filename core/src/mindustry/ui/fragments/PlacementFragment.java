@@ -440,22 +440,31 @@ public class PlacementFragment{
                             }
                             if(hoverTile != null) {
                                 topTable.row();
-                                Block display = null;
-                                    if(hoverTile.overlay().itemDrop != null) {
-                                        display = hoverTile.overlay();
-                                    }
-                                    else if(hoverTile.wallDrop() != null) {
-                                        display = hoverTile.block();
-                                    } else {
-                                        display = hoverTile.floor();
-                                    }
-                                    Block toDisplay = display;
                                 
-                                topTable.table(t -> {
-                                    t.left();
-                                    t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
-                                    t.labelWrap(toDisplay.localizedName).left().width(190f).padLeft(5);
-                                }).growX().left();
+                                if(hoverBuilding == null && hoverTile.block() != null && !hoverTile.block().isAir()) {
+                                    Block toDisplay = hoverTile.block();
+                                    topTable.table(t -> {
+                                        t.left();
+                                        t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
+                                        t.labelWrap(toDisplay.localizedName).left().width(100f).padLeft(5);
+                                    }).growX().left();
+                                }
+                                if(hoverTile.overlay() != null && !hoverTile.overlay().isAir()) {
+                                    Block toDisplay = hoverTile.overlay();
+                                    topTable.table(t -> {
+                                        t.left();
+                                        t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
+                                        t.labelWrap(toDisplay.localizedName).left().width(100f).padLeft(5);
+                                    }).growX().left();
+                                }
+                                else if(hoverTile.floor() != null && !hoverTile.floor().isAir()) {
+                                    Block toDisplay = hoverTile.floor();
+                                    topTable.table(t -> {
+                                        t.left();
+                                        t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
+                                        t.labelWrap(toDisplay.localizedName).left().width(100f).padLeft(5);
+                                    }).growX().left();
+                                }
 
                             }
                         }
