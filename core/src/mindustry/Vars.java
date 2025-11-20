@@ -176,7 +176,7 @@ public class Vars implements Loadable{
     /** max GL texture size */
     public static int maxTextureSize = 2048;
     /** Maximum schematic size.*/
-    public static int maxSchematicSize = 64;
+    public static int maxSchematicSize = 256;
     /** Whether to show sector info upon landing. */
     public static boolean showSectorLandInfo = true;
     /** Whether to check for memory use before taking screenshots. */
