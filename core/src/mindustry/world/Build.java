@@ -95,6 +95,7 @@ public class Build{
             tile.build.noSleep();
             Fx.rotateBlock.at(tile.build.x, tile.build.y, tile.build.block.size);
             Events.fire(new BuildRotateEvent(tile.build, unit, previous));
+            if(!headless) Sounds.blockRotate.at(tile.build, 1f + Mathf.range(0.1f), 1f);
             return;
         }
 
@@ -116,7 +117,7 @@ public class Build{
             if(fogControl.isVisibleTile(team, tile.x, tile.y)){
                 result.placeEffect.at(tile.drawx(), tile.drawy(), result.size);
                 Fx.rotateBlock.at(tile.build.x, tile.build.y, tile.build.block.size);
-                //doesn't play a sound
+                ConstructBlock.playRepairSound(team, tile);
             }
 
             Events.fire(new BlockBuildEndEvent(tile, unit, team, false, tile.build.config()));
