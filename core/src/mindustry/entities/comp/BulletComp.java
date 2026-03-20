@@ -311,6 +311,7 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
     @Override
     public void draw(){
+        Draw.reset();
         Draw.z(type.layer);
 
         if( mindustry.CustomClientLogic.hidddenRender() ) {

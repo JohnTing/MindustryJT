@@ -1510,6 +1510,16 @@ public class UnitType extends UnlockableContent implements Senseable{
                 Draw.color(Pal.shadow, Pal.shadow.a);
                 
                 Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
+                Draw.color(unit.team.color);
+                Lines.stroke(0.2f + (unit.armor)/20f);
+                //Lines.poly(unit.x, unit.y, 8, (unit.hitSize/2f), unit.rotation);
+
+                Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(unit.maxHealth)/5f, unit.rotation);
+
+                Draw.alpha(0.3f);
+                Fill.poly(unit.x, unit.y, 5,  Mathf.sqrt(unit.maxHealth) * ((unit.health + unit.shield) / unit.maxHealth) / 5f, unit.rotation);
+                Draw.alpha(1f);
+                
 
                 if(this instanceof mindustry.type.unit.MissileUnitType missile) {
                     if(missile.weapons.size > 0) {
@@ -1522,14 +1532,16 @@ public class UnitType extends UnlockableContent implements Senseable{
                                 Lines.circle(unit.x, unit.y, splashDamage/20);
                             }
                             if(damage > 1) {
-                                Lines.arc(unit.x, unit.y, damage/20, 3, unit.rotation - 90);
+                                Lines.poly(unit.x, unit.y, 3, damage/20, unit.rotation - 90);
                             }
                         }
+                        Draw.color();
                         Draw.reset();
                         return;
                     }
                 }
                 Draw.color();
+                Draw.reset();
             }
             return;
         }
