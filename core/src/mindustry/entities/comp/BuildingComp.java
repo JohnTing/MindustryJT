@@ -68,6 +68,10 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     transient int rotation;
     transient float payloadRotation;
     transient String lastAccessed;
+    transient String lastBreak;
+    transient String lastPlace;
+    
+
     transient boolean wasDamaged; //used only by the indexer
     transient float visualLiquid;
 
@@ -1148,7 +1152,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     }
 
     public void updatePowerGraph(){
-        for(Building other : getPowerConnections(tempBuilds)){
+        Seq<Building> powerConnections = getPowerConnections(tempBuilds);
+        for(Building other : powerConnections){
             if(other.power != null){
                 other.power.graph.addGraph(power.graph);
             }
@@ -1534,7 +1539,8 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         table.row();
 
         //only display everything else if the team is the same
-        if(team == player.team()){
+        // if(team == player.team()){
+        if(true){
             table.table(bars -> {
                 bars.defaults().growX().height(18f).pad(4);
 

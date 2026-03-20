@@ -25,7 +25,7 @@ import static mindustry.Vars.*;
 
 public class ChatFragment extends Table{
     private static final int messagesShown = 10;
-    private Seq<String> messages = new Seq<>();
+    public Seq<String> messages = new Seq<>();
     private float fadetime;
     private boolean shown = false;
     private TextField chatfield;
@@ -47,15 +47,16 @@ public class ChatFragment extends Table{
         font = Fonts.def;
 
         visible(() -> {
+            /*
             if(!net.active() && messages.size > 0){
                 clearMessages();
 
                 if(shown){
                     hide();
                 }
-            }
+            }*/
 
-            return net.active() && ui.hudfrag.shown;
+            return ui.hudfrag.shown;
         });
 
         update(() -> {
