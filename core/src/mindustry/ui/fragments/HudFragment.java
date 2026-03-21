@@ -41,6 +41,7 @@ public class HudFragment{
 
     public PlacementFragment blockfrag = new PlacementFragment();
     public CoreItemsDisplay coreItems = new CoreItemsDisplay();
+    public mindustry.ui.PowerNetworksDisplay powerNetworks = new mindustry.ui.PowerNetworksDisplay();
     
     public boolean shown = true;
 
@@ -547,6 +548,8 @@ public class HudFragment{
             t.table(c -> {
                 //core items
                 c.top().collapser(coreItems, () -> Core.settings.getBool("coreitems") && !mobile && shown).fillX().row();
+                c.top().collapser(powerNetworks, () -> Core.settings.getBool("coreitems") && !mobile && shown).fillX().row();
+                
 
                 float notifDuration = 240f;
                 float[] coreAttackTime = {0};
