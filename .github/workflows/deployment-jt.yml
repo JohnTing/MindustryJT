@@ -57,6 +57,17 @@ jobs:
         echo "BUILD_VERSION=$VERSION" >> $GITHUB_ENV
         echo "RELEASE_TAG=$UNIQUE_TAG" >> $GITHUB_ENV
 
+    # =================================================================
+    # == 新增：解決 JitPack 解析失敗的 Arc 依賴問題 ==
+    # =================================================================
+    - name: Clone Arc dependency
+      run: |
+        # 將 Arc 專案 clone 到當前專案的上一層目錄
+        git clone https://github.com/Anuken/Arc ../Arc
+        cd ../Arc
+        # 切換到與目前 Mindustry 匹配的 commit 版本 (請依日誌需求調整)
+        git checkout a3c7d2cbf3
+
     - name: Build Desktop and Server JARs
       # 執行 gradle 編譯，只編譯 desktop 和 server
       run: ./gradlew desktop:dist server:dist -Pbuildversion=${{ env.BUILD_VERSION }}
