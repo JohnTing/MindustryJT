@@ -108,9 +108,8 @@ public class PowerNetworksDisplay extends Table {
             // 加入 Table，設定大小並留白
             add(powerBar).size(200f, 20f).pad(2f);
 
-            count++;
             // 如果分區太多，每 3 個分區換一行 (可依需求調整)
-            if (count % 3 == 0) {
+            if ((i+1) % 3 == 0) {
                 row();
             }
         }
