@@ -211,6 +211,10 @@ public class PowerNode extends PowerBlock{
     protected void getPotentialLinks(Tile tile, Team team, Cons<Building> others){
         if(!autolink) return;
 
+        if (Core.input.keyDown(Binding.diagonalPlacement)) {
+            getPotentialLinksFull(tile, team, others);
+        }
+
         Boolf<Building> valid = other -> other != null && other.tile != tile && other.block.connectedPower && other.power != null &&
             (other.block.outputsPower || other.block.consumesPower || other.block instanceof PowerNode) &&
             overlaps(tile.x * tilesize + offset, tile.y * tilesize + offset, other.tile, laserRange * tilesize) && other.team == team &&
@@ -510,21 +514,11 @@ public class PowerNode extends PowerBlock{
                 if(other.power.links.size == 0){ //find links
                     Seq<Point2> points = new Seq<>();
 
-
-                    if (Core.input.keyDown(Binding.diagonalPlacement)) {
-                        getPotentialLinksFull(tile, team, link -> {
-                            if(!insulated(this, link) && points.size < maxNodes){
-                                points.add(new Point2(link.tileX() - tile.x, link.tileY() - tile.y));
-                            }
-                        });
-                    } else {
-                        getPotentialLinks(tile, team, link -> {
-                            if(!insulated(this, link) && points.size < maxNodes){
-                                points.add(new Point2(link.tileX() - tile.x, link.tileY() - tile.y));
-                            }
-                        });
-                    }
-
+                    getPotentialLinks(tile, team, link -> {
+                        if(!insulated(this, link) && points.size < maxNodes){
+                            points.add(new Point2(link.tileX() - tile.x, link.tileY() - tile.y));
+                        }
+                    });
 
                     configure(points.toArray(Point2.class));
                 }else{ //clear links

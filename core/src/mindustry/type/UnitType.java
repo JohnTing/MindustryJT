@@ -1519,9 +1519,11 @@ public class UnitType extends UnlockableContent implements Senseable{
 
                 Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(unit.maxHealth)/5f, unit.rotation);
 
-                Draw.alpha(0.3f);
-                Fill.poly(unit.x, unit.y, 5,  Mathf.sqrt(unit.maxHealth) * ((unit.health + unit.shield) / unit.maxHealth) / 5f, unit.rotation);
-                Draw.alpha(1f);
+                if(unit.health > 0) {
+                    Draw.alpha(0.3f);
+                    Fill.poly(unit.x, unit.y, 5,  Mathf.sqrt(unit.maxHealth) * ((unit.health + unit.shield) / unit.maxHealth) / 5f, unit.rotation);
+                    Draw.alpha(1f);
+                }
                 
 
                 if(this instanceof mindustry.type.unit.MissileUnitType missile) {
