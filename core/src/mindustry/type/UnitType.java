@@ -709,7 +709,7 @@ public class UnitType extends UnlockableContent implements Senseable{
             //TODO overlay shields
             // bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
 
-            bars.add(new Bar(() -> String.format("%s:%.0f/%.0f%s", Core.bundle.format("stat.health"), unit.health(), unit.maxHealth(),
+            bars.add(new Bar(() -> String.format("%s:%s/%s%s", Core.bundle.format("stat.health"), UI.formatAmount(unit.health()), UI.formatAmount(unit.maxHealth()),
             unit.shield() > 0.1f ? "(+" + UI.formatAmountLow(unit.shield()) + ")" : "")
             ,() -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
