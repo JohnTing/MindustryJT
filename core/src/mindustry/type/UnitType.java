@@ -1509,10 +1509,11 @@ public class UnitType extends UnlockableContent implements Senseable{
 
         if( mindustry.CustomClientLogic.hidddenRender()) {
             if(!isPayload) {
-                Draw.z(Math.min(Layer.darkness, z));        
+                Draw.z(Math.min(Layer.darkness, z));
                 Draw.color(Pal.shadow, Pal.shadow.a);
                 
                 Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
+                Draw.z(Math.min(Layer.darkness, z - 1f));
                 Draw.color(unit.team.color);
                 Lines.stroke(0.2f + (unit.armor)/20f);
                 //Lines.poly(unit.x, unit.y, 8, (unit.hitSize/2f), unit.rotation);
