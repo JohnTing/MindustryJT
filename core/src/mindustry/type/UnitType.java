@@ -28,6 +28,7 @@ import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.graphics.MultiPacker.*;
+import mindustry.input.Binding;
 import mindustry.logic.*;
 import mindustry.type.ammo.*;
 import mindustry.ui.*;
@@ -702,7 +703,14 @@ public class UnitType extends UnlockableContent implements Senseable{
         table.table(t -> {
             t.left();
             t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
-            t.labelWrap(unit.isPlayer() ? unit.getPlayer().coloredName() + "\n[lightgray]" + localizedName : localizedName).left().width(190f).padLeft(5);
+            // t.labelWrap(unit.isPlayer() ? unit.getPlayer().coloredName() + "\n[lightgray]" + localizedName : localizedName).left().width(190f).padLeft(5);
+            t.labelWrap((unit.isPlayer() ? unit.getPlayer().coloredName() + "\n[lightgray]" + localizedName : localizedName)
+            + String.format("(%d/%d)", unit.team.data().countType(unit.type), Units.getCap(unit.team))
+            ).left().width(190f).padLeft(5);
+
+            if (unit.stack() != null && unit.stack().amount > 0) {
+                t.labelWrap(() -> unit.stack().item.emoji() + " " + (long)unit.stack().amount + "").left().padLeft(0);
+            }
         }).growX().left();
         table.row();
 
@@ -710,11 +718,18 @@ public class UnitType extends UnlockableContent implements Senseable{
             bars.defaults().growX().height(20f).pad(4);
 
             //TODO overlay shields
-            bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+            // bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+
+            bars.add(new Bar(() -> String.format("%s:%s/%s%s", Core.bundle.format("stat.health"), UI.formatAmount(unit.health()), UI.formatAmount(unit.maxHealth()),
+            unit.shield() > 0.1f ? "(+" + UI.formatAmountLow(unit.shield()) + ")" : "")
+            ,() -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
             if(state.rules.unitAmmo){
-                bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
+                //bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
+                // String.format
+                bars.add(new Bar(() -> String.format("%s %.0f/%d", ammoType.icon(), unit.ammo, ammoCapacity), () -> ammoType.barColor(), () -> unit.ammo / (float)ammoCapacity));
+
                 bars.row();
             }
 
@@ -1506,6 +1521,54 @@ public class UnitType extends UnlockableContent implements Senseable{
             unit.elevation > 0.5f || (flying && unit.dead) ? (flyingLayer) :
             seg != null ? groundLayer + seg.segmentIndex() / 4000f * Mathf.sign(segmentLayerOrder) + (!segmentLayerOrder ? 0.01f : 0f) :
             groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+
+
+
+        if( mindustry.CustomClientLogic.hiddenRender()) {
+            if(!isPayload) {
+                Draw.z(Math.min(Layer.darkness, z));
+                Draw.color(Pal.shadow, Pal.shadow.a);
+                
+                Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
+                Draw.z(Math.min(Layer.darkness, z - 1f));
+                Draw.color(unit.team.color);
+                Lines.stroke(0.2f + (unit.armor)/20f);
+                //Lines.poly(unit.x, unit.y, 8, (unit.hitSize/2f), unit.rotation);
+
+                Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(unit.maxHealth)/5f, unit.rotation);
+
+                if(unit.health > 0) {
+                    float hp = Mathf.sqrt(unit.health + unit.shield);
+                    Draw.alpha(0.3f);
+                    Fill.poly(unit.x, unit.y, 5, hp / 5f, unit.rotation);
+                    Draw.alpha(1f);
+                }
+                
+
+                if(this instanceof mindustry.type.unit.MissileUnitType missile) {
+                    if(missile.weapons.size > 0) {
+                        Draw.color(unit.team.color);
+                        if(unit.x > 0 && unit.y > 0) {
+                            float splashDamage = missile.weapons.get(0).bullet.splashDamage;
+                            float damage = missile.weapons.get(0).bullet.damage;
+
+                            if(splashDamage > 1) {
+                                Lines.circle(unit.x, unit.y, splashDamage/20);
+                            }
+                            if(damage > 1) {
+                                Lines.poly(unit.x, unit.y, 3, damage/20, unit.rotation - 90);
+                            }
+                        }
+                        Draw.color();
+                        Draw.reset();
+                        return;
+                    }
+                }
+                Draw.color();
+                Draw.reset();
+            }
+            return;
+        }
 
         if(!isPayload && (unit.isFlying() || shadowElevation > 0)){
             Draw.z(Math.min(Layer.darkness, z - 1f));

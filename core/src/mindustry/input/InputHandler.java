@@ -720,6 +720,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             }
         }
         if(player != null) build.updateLastAccess(player);
+        mindustry.CustomClientLogic.handleConfigEvent(player, build, value);
         build.configured(player == null || player.dead() ? null : player.unit(), value);
         Events.fire(new ConfigEvent(build, player, value));
     }
@@ -1980,7 +1981,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(build.isCommandable() && commandMode){
             //TODO handled in tap.
             consumed = true;
-        }else if(build.block.configurable && build.interactable(player.team())){ //check if tapped block is configurable
+        //}else if(build.block.configurable && build.interactable(player.team())){ //check if tapped block is configurable
+        // check enemy 
+        }else if(build.block.configurable){
             consumed = true;
             if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
             //alternatively, the current selected block can 'agree' to switch config tiles
@@ -2012,7 +2015,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         //consume tap event if necessary
         if(build.interactable(player.team()) && build.block.consumesTap){
             consumed = true;
-        }else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
+        //}else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
+        
+        // check enemy item
+        }else if(build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
             if(build.block.hasItems && build.items.total() > 0){
                 inv.showFor(build);
                 consumed = true;
@@ -2147,7 +2153,22 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     public @Nullable Unit selectedUnit(){
+
+        // select building only
+        if(mindustry.CustomClientLogic.hiddenRender()) {
+            Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+            // if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
+            if(build instanceof ControlBlock cont && cont.canControl() && cont.unit() != player.unit() && cont.unit().isAI()){
+                return cont.unit();
+            }
+            return null;
+        }
+
         Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.playerControllable());
+        if(unit == null) { 
+            unit = Units.closestEnemy(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.playerControllable());
+        }
+
         if(unit != null){
             unit.hitbox(Tmp.r1);
             Tmp.r1.grow(6f);
@@ -2157,7 +2178,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         }
 
         Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
+        // if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
+        if(build instanceof ControlBlock cont && cont.canControl() && cont.unit() != player.unit() && cont.unit().isAI()){
             return cont.unit();
         }
 
@@ -2210,6 +2232,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public Seq<Unit> selectedCommandUnits(float x, float y, float w, float h, Boolf<Unit> predicate){
         var tree = player.team().data().tree();
         tmpUnits.clear();
+        if(mindustry.CustomClientLogic.hiddenRender()) {
+            return tmpUnits;
+        }
+
         float rad = 4f;
         tree.intersect(Tmp.r1.set(x - rad/2f, y - rad/2f, rad*2f + w, rad*2f + h).normalize(), tmpUnits);
         tmpUnits.removeAll(u -> !u.isCommandable() || !predicate.get(u));
