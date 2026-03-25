@@ -743,13 +743,17 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             throw new ValidateException(player, "Player cannot control a building.");
         }
 
-        if(player.team() == build.team && build.canControlSelect(player.unit())){
+        if(build.canControlSelect(player.unit())){
+            Team tempTeam = build.team();
             var before = player.unit();
 
             build.onControlSelect(player.unit());
 
             if(!before.dead && before.spawnedByCore && !before.isPlayer()){
                 Call.unitDespawn(before);
+            }
+            if(!net.active()){
+                player.team(tempTeam);
             }
         }
     }
@@ -777,7 +781,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(unit == null){ //just clear the unit (is this used?)
             player.clearUnit();
             //make sure it's AI controlled, so players can't overwrite each other
-        }else if(unit.isAI() && unit.team == player.team() && !unit.dead && unit.playerControllable()){
+        // }else if(unit.isAI() && unit.team == player.team() && !unit.dead && unit.playerControllable()){
+        }else if(unit.isAI() && !unit.dead && unit.playerControllable()){
             if(net.client() && player.isLocal()){
                 player.justSwitchFrom = player.unit();
                 player.justSwitchTo = unit;
@@ -786,7 +791,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             //TODO range check for docking?
             var before = player.unit();
 
+            Team tempTeam = unit.team();
             player.unit(unit);
+            if(!net.active()){
+                player.team(tempTeam);
+            }
 
             if(before != null){
                 if(before.spawnedByCore){
@@ -2188,7 +2197,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     public @Nullable Building selectedControlBuild(){
         Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && build.team == player.team()){
+        if(build != null && !player.dead() && build.canControlSelect(player.unit())){
             return build;
         }
         return null;
@@ -2197,6 +2206,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public @Nullable Unit selectedCommandUnit(float x, float y){
         var tree = player.team().data().tree();
         tmpUnits.clear();
+        if(mindustry.CustomClientLogic.hiddenRender()) {
+            return null;
+        }
         float rad = 4f;
         tree.intersect(x - rad/2f, y - rad/2f, rad, rad, tmpUnits);
         return tmpUnits.min(u -> u.isCommandable(), u -> u.dst(x, y) - u.hitSize/2f);
