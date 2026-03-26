@@ -106,7 +106,8 @@ public class Binding{
     chatScroll = KeyBind.add("chat_scroll", new Axis(KeyCode.scroll)),
     chatMode = KeyBind.add("chat_mode", KeyCode.tab),
     console = KeyBind.add("console", KeyCode.f8),
-    debugHitboxes = KeyBind.add("debug_hitboxes", KeyCode.unset)
+    debugHitboxes = KeyBind.add("debug_hitboxes", KeyCode.unset),
+    toggleHiddenRender =  KeyBind.add("toggleHiddenRender", KeyCode.space)
     ;
 
     //dummy static class initializer
