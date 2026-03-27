@@ -63,7 +63,7 @@ tasks.register('copyAssets'){
 tasks.register('copyNatives'){
     doLast{
         copy{
-            from "../../Arc/natives/natives-freetype-ios/libs", "../../Arc/natives/natives-ios/libs"
+            from "../../Arc/natives/natives-freetype-ios/libs", "../../Arc/natives/natives-freetype-ios/libs"
             into "libs"
         }
     }
