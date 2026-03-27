@@ -63,7 +63,7 @@ jobs:
     - name: Clone Arc dependency
       run: |
         # 1. 從 Mindustry 的 gradle.properties 自動抓取匹配的 Arc 版本 (arcHash)
-        ARC_HASH=$(grep '^arcHash=' gradle.properties | cut -d'=' -f2 | tr -d '\r')
+        ARC_HASH=$(grep '^archash=' gradle.properties | cut -d'=' -f2 | tr -d '\r')
         echo "Required Arc Hash/Version: $ARC_HASH"
         
         # 2. 將 Arc 專案 clone 到當前專案的上一層目錄
