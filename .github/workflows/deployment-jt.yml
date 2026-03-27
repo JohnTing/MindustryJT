@@ -62,15 +62,22 @@ jobs:
     # =================================================================
     - name: Clone Arc dependency
       run: |
-        # 將 Arc 專案 clone 到當前專案的上一層目錄
+        # 1. 從 Mindustry 的 gradle.properties 自動抓取匹配的 Arc 版本 (arcHash)
+        ARC_HASH=$(grep '^arcHash=' gradle.properties | cut -d'=' -f2 | tr -d '\r')
+        echo "Required Arc Hash/Version: $ARC_HASH"
+        
+        # 2. 將 Arc 專案 clone 到當前專案的上一層目錄
         git clone https://github.com/Anuken/Arc ../Arc
         cd ../Arc
-        # 切換到與目前 Mindustry 匹配的 commit 版本 (請依日誌需求調整)
-        git checkout a3c7d2cbf3
-
-    - name: Build Desktop and Server JARs
-      # 執行 gradle 編譯，只編譯 desktop 和 server
-      run: ./gradlew desktop:dist server:dist -Pbuildversion=${{ env.BUILD_VERSION }}
+        
+        # 3. 切換到與目前 Mindustry 完全匹配的 commit 或 tag
+        if [ -n "$ARC_HASH" ]; then
+          git checkout "$ARC_HASH"
+          echo "Successfully checked out Arc to $ARC_HASH"
+        else
+          # 防呆機制，如果沒抓到就預設用 master (或依你需求改為 $BUILD_VERSION)
+          echo "Warning: arcHash not found in gradle.properties. Staying on master."
+        fi
 
     # =================================================================
     # == Android Build Section (帶有增強的偵錯功能) ==
