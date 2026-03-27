@@ -376,7 +376,7 @@ public class SettingsMenuDialog extends BaseDialog{
         }
 
         if(!mobile){
-            game.checkPref("console", false);
+            game.checkPref("console", true);
         }
 
         graphics.sliderPref("uiEdgePadding", 0, 0, 100, s -> s + "px", s -> {
@@ -547,6 +547,13 @@ public class SettingsMenuDialog extends BaseDialog{
         if(!mobile){
             Core.settings.put("swapdiagonal", false);
         }
+        graphics.checkPref("hiddenrender", false);
+        graphics.checkPref("hiddenrenderonbuild", true);
+
+        
+        graphics.sliderPref("hiddenItemTransparency", 50, 0, 100, 10, s -> s == 0 ? "disable": s+"%");
+        graphics.sliderPref("splitpowerwarn", 0, 0, 10000, 100, s -> s == 0 ? "disable": s+"");
+        graphics.sliderPref("removepowerwarn", 0, 0, 10000, 100, s ->  s == 0 ? "disable": s+"");
     }
 
     public void exportData(Fi file) throws IOException{
