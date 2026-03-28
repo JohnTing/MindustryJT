@@ -1538,10 +1538,28 @@ public class UnitType extends UnlockableContent implements Senseable{
                 Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(unit.maxHealth)/5f, unit.rotation);
 
                 if(unit.health > 0) {
-                    float hp = Mathf.sqrt(unit.health + unit.shield);
-                    Draw.alpha(0.3f);
-                    Fill.poly(unit.x, unit.y, 5, hp / 5f, unit.rotation);
-                    Draw.alpha(1f);
+                    float hp = (unit.health + unit.shield);
+                    float maxHp = (unit.maxHealth);
+
+                    float exhpcap = 100_000;
+
+                    if(hp > exhpcap) {
+                        float exHp = (hp - exhpcap) / 10f;
+                        Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(exhpcap) /5f, unit.rotation);
+                        Draw.alpha(0.3f);
+                        Fill.poly(unit.x, unit.y, 5, (Mathf.sqrt(exhpcap+exHp)) / 5f , unit.rotation);
+                        for(int level = 2 ; level * 100_000 < (exhpcap+exHp); level++) {
+                            Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(level * 100_000) /5f, unit.rotation);
+                        }
+
+                        Draw.alpha(1f);
+                    } else {
+                        Draw.alpha(0.3f);
+                        Fill.poly(unit.x, unit.y, 5, Mathf.sqrt(hp) / 5f, unit.rotation);
+                        Draw.alpha(1f);
+                    }
+
+
                 }
                 
 
