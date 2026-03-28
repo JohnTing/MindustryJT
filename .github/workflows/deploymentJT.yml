@@ -60,19 +60,29 @@ jobs:
       run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ../bekeystore.jks
 
     # =================================================================
-    # == 修正 1：同時編譯 JAR 檔與 APK ==
+    # == 🟢 核心修正 1：強制在 CI 環境中將 Gradle 降級到穩定版本 (8.6)
+    # 避免 Gradle 9.x/10 與舊版 Android Gradle Plugin 產生依賴變更衝突
+    # =================================================================
+    - name: Downgrade Gradle Wrapper to 8.6
+      run: |
+        echo "Forcing Gradle 8.6 to prevent configuration mutation errors..."
+        sed -i 's|^distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.6-bin.zip|' gradle/wrapper/gradle-wrapper.properties
+
+    # =================================================================
+    # == 🟢 核心修正 2：編譯時加入 --no-configuration-cache 與 --no-parallel
+    # 避免舊版 AGP 在多執行緒下發生的生命週期解析錯誤
     # =================================================================
     - name: Build All Artifacts (Desktop, Server, Android)
       id: build_all
-      # 移除 continue-on-error，讓錯誤能直接暴露，避免默默失敗
       env:
         keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
         keystore_alias: ${{ secrets.KEYSTORE_ALIAS }}
         keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
-      # 加入 desktop:dist 與 server:dist (Mindustry 常用的編譯任務)
       run: >
         ./gradlew desktop:dist server:dist android:assembleRelease
         -Pbuildversion=${{ env.BUILD_VERSION }}
+        --no-configuration-cache
+        --no-parallel
         --stacktrace
         
     - name: Upload Build Reports on Failure
@@ -83,20 +93,15 @@ jobs:
         path: '**/build/reports/'
         retention-days: 7
 
-    # =================================================================
-    # == 修正 2：統一使用 softprops/action-gh-release 上傳所有檔案 ==
-    # =================================================================
     - name: Create Release and Upload All Files
       id: create_release
       uses: softprops/action-gh-release@v2
-      # 確保只有編譯成功才會執行這步
       if: success() 
       with:
         tag_name: ${{ env.RELEASE_TAG }}
         name: Release ${{ env.RELEASE_TAG }}
         target_commitish: ${{ github.sha }}
         prerelease: true
-        # 使用萬用字元確保不管檔名有些微差異都能抓到
         files: |
           desktop/build/libs/*.jar
           server/build/libs/*.jar
