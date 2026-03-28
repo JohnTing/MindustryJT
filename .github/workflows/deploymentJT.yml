@@ -57,9 +57,16 @@ jobs:
         keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
         JDK_DIR: /home/runner/jdks/
       run: |
-        git clone --depth=1 --branch=master https://github.com/Anuken/Arc ../Arc
+        git clone --depth=1 --branch=master https://github.com/Anuken/Arc
         # git clone --depth=1 --branch=master https://github.com/Anuken/Mindustry
         # cd Mindustry
+
+        git clone https://github.com/${{ github.repository }} ./Mindustry
+        cd Mindustry
+        git checkout ${{ github.sha }}
+
+
+
         #echo "BODY=$(git rev-parse HEAD)" >> $GITHUB_ENV
         #sed -i 's/applicationId "io.anuke.mindustry"/applicationId "io.anuke.mindustry.be"/g' android/build.gradle
         #sed -i 's/"io.anuke.mindustry"/"io.anuke.mindustry.be"/g' android/AndroidManifest.xml
