@@ -53,7 +53,7 @@ jobs:
     - name: Decode Keystore
       run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ../bekeystore.jks
 
-    - name: Modify Android Package to Bleeding-Edge
+    # - name: Modify Android Package to Bleeding-Edge
       # 比照原版將 App 改名為 BE 版以便與正式版區分
       # run: |
       #   sed -i 's/applicationId "io.anuke.mindustry"/applicationId "io.anuke.mindustry.be"/g' android/build.gradle
