@@ -81,7 +81,7 @@ jobs:
         echo "JDK directory: $JDK_DIR"
         # ./gradlew desktop:dist -Pbuildversion=${RELEASE_VERSION} -Prelease -PversionModifier=steam -PversionType=bleeding-edge -PshowCommitHash desktop:packrLinux64 desktop:packrWindows64 desktop:packrMacOS --stacktrace
         echo $PWD
-        ls deploy/
+        # ls deploy/
     
     # ==========================================
     # 發布流程 (保留 JT 版的發布邏輯)
