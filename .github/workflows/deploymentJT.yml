@@ -23,7 +23,9 @@ jobs:
         java-version: 17
         distribution: 'temurin'
 
-    # 使用 v3 快取鍵，確保取得全新的環境
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
@@ -46,12 +48,41 @@ jobs:
         echo "RELEASE_TAG=$UNIQUE_TAG" >> $GITHUB_ENV
 
     # ==========================================
-    # 階段 1：編譯並發布 Desktop 與 Server
+    # 前置準備：Keystore 與 Android ID 修改 (比照原版)
     # ==========================================
-    - name: Build Desktop and Server JARs
-      run: ./gradlew clean desktop:dist server:dist -Pbuildversion=${{ env.BUILD_VERSION }} --no-daemon
+    - name: Decode Keystore
+      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ../bekeystore.jks
 
-    - name: Create Release and Upload JARs
+    - name: Modify Android Package to Bleeding-Edge
+      # 比照原版將 App 改名為 BE 版以便與正式版區分
+      # run: |
+      #   sed -i 's/applicationId "io.anuke.mindustry"/applicationId "io.anuke.mindustry.be"/g' android/build.gradle
+      #   sed -i 's/"io.anuke.mindustry"/"io.anuke.mindustry.be"/g' android/AndroidManifest.xml
+      #   sed -i 's/Mindustry/Mindustry BE/g' android/res/values/strings.xml
+
+    # ==========================================
+    # 核心步驟：同一次編譯 (跟原版一樣一個指令出所有包)
+    # ==========================================
+    - name: Build All Artifacts
+      env:
+        keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
+        keystore_alias: ${{ secrets.KEYSTORE_ALIAS }}
+        keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
+      run: >
+        ./gradlew pack 
+        desktop:dist 
+        server:dist 
+        android:assembleRelease 
+        -Pbuildversion=${{ env.BUILD_VERSION }} 
+        -PshowCommitHash 
+        --stacktrace 
+        --no-daemon 
+        --no-configuration-cache
+      # -PversionType=bleeding-edge 
+    # ==========================================
+    # 發布流程 (保留 JT 版的發布邏輯)
+    # ==========================================
+    - name: Create Release and Upload All Artifacts
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ env.RELEASE_TAG }}
@@ -61,52 +92,13 @@ jobs:
         files: |
           desktop/build/libs/*.jar
           server/build/libs/server-release.jar
+          android/build/outputs/apk/release/android-release.apk
 
-    # ==========================================
-    # 階段 2：深度清理 Gradle 狀態 (解決 mutate 錯誤的殺手鐧)
-    # ==========================================
-    - name: Clean up Gradle state before Android build
-      run: |
-        ./gradlew --stop
-        rm -rf .gradle/configuration-cache
-        rm -rf .gradle/caches
-
-    # ==========================================
-    # 階段 3：編譯並發布 Android APK
-    # ==========================================
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
-    - name: Decode Keystore
-      # 注意：請確認您的專案 build.gradle 確實是去上一層目錄 (../) 找 bekeystore.jks
-      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ../bekeystore.jks
-
-    - name: Build Android Release APK
-      # 這次不加 continue-on-error，如果失敗可以直接看到真正的原因
-      env:
-        keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
-        keystore_alias: ${{ secrets.KEYSTORE_ALIAS }}
-        keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
-      run: >
-        ./gradlew android:assembleRelease
-        -Pbuildversion=${{ env.BUILD_VERSION }}
-        --stacktrace
-        --no-daemon
-        --no-configuration-cache
-
+    # 如果編譯失敗，上傳 Android 報告供除錯
     - name: Upload Android Build Reports on Failure
-      if: failure() # 只有在前面步驟失敗時才會執行此步
+      if: failure()
       uses: actions/upload-artifact@v4
       with:
         name: android-build-reports
         path: android/build/reports/
         retention-days: 7
-
-    - name: Upload Android Release APK
-      # 將 APK 附加到上面剛剛建立的同一個 Release 中
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ env.RELEASE_TAG }}
-        file: android/build/outputs/apk/release/android-release.apk
-        asset_name: mindustry-android-release-${{ env.BUILD_VERSION }}.apk
