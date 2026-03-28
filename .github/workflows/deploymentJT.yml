@@ -94,6 +94,6 @@ jobs:
         target_commitish: ${{ github.sha }}
         prerelease: true
         files: |
-          desktop/build/libs/*.jar
-          server/build/libs/server-release.jar
-          android/build/outputs/apk/release/android-release.apk
+          Mindustry/desktop/build/libs/*.jar
+          Mindustry/server/build/libs/server-release.jar
+          Mindustry/android/build/outputs/apk/release/android-release.apk
