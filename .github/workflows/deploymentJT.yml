@@ -57,9 +57,9 @@ jobs:
         keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
         JDK_DIR: /home/runner/jdks/
       run: |
-        git clone --depth=1 --branch=master https://github.com/Anuken/Arc
-        git clone --depth=1 --branch=master https://github.com/Anuken/Mindustry
-        cd Mindustry
+        git clone --depth=1 --branch=master https://github.com/Anuken/Arc ../Arc
+        # git clone --depth=1 --branch=master https://github.com/Anuken/Mindustry
+        # cd Mindustry
         #echo "BODY=$(git rev-parse HEAD)" >> $GITHUB_ENV
         #sed -i 's/applicationId "io.anuke.mindustry"/applicationId "io.anuke.mindustry.be"/g' android/build.gradle
         #sed -i 's/"io.anuke.mindustry"/"io.anuke.mindustry.be"/g' android/AndroidManifest.xml
@@ -87,6 +87,6 @@ jobs:
         target_commitish: ${{ github.sha }}
         prerelease: true
         files: |
-          Mindustry/desktop/build/libs/*.jar
-          Mindustry/server/build/libs/server-release.jar
-          Mindustry/android/build/outputs/apk/release/android-release.apk
+          desktop/build/libs/*.jar
+          server/build/libs/server-release.jar
+          android/build/outputs/apk/release/android-release.apk
