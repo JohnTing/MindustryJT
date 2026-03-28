@@ -267,6 +267,102 @@ public class PowerNode extends PowerBlock{
         });
     }
 
+    protected void getPotentialLinksFull(Tile tile, Team team, Cons<Building> others){
+        if(!autolink) return;
+
+        // 1. 初始電網集合 (包含相鄰和自身)
+        graphs.clear();
+        for(var p : Edges.getEdges(size)){
+            Tile other = tile.nearby(p);
+            if(other != null && other.team() == team && other.build != null && other.build.power != null){
+                graphs.add(other.build.power.graph);
+            }
+        }
+        if(tile.build != null && tile.build.power != null && tile.build.power.graph != null){
+            graphs.add(tile.build.power.graph);
+        }
+
+        // 2. 收集所有合法的候選建築
+        tempBuilds.clear();
+        Boolf<Building> basicValid = other -> 
+            other != null && other.tile != tile && 
+            other.block.connectedPower && other.power != null &&
+            (other.block.outputsPower || other.block.consumesPower || other.block instanceof PowerNode) &&
+            overlaps(tile.x * tilesize + offset, tile.y * tilesize + offset, other.tile, laserRange * tilesize) && 
+            other.team == team &&
+            !PowerNode.insulated(tile, other.tile) &&
+            !(other instanceof PowerNodeBuild obuild && obuild.power.links.size >= ((PowerNode)obuild.block).maxNodes) &&
+            !Structs.contains(Edges.getEdges(size), p -> { 
+                var t = world.tile(tile.x + p.x, tile.y + p.y);
+                return t != null && t.build == other;
+            });
+
+        var worldRange = laserRange * tilesize;
+        var tree = team.data().buildingTree;
+        if(tree != null){
+            tree.intersect(tile.worldx() - worldRange, tile.worldy() - worldRange, worldRange * 2, worldRange * 2, build -> {
+                if(basicValid.get(build) && !tempBuilds.contains(build)){
+                    tempBuilds.add(build);
+                }
+            });
+        }
+
+        // 3. 動態貪婪選取 (核心邏輯)
+        // 我們最多只需要選出 maxNodes 個建築
+        int count = 0;
+        while(count < maxNodes && tempBuilds.size > 0){
+            Building best = null;
+            int bestRank = 99; // 越小越優先
+            float bestDist = Float.MAX_VALUE;
+            int bestIndex = -1;
+
+            for(int i = 0; i < tempBuilds.size; i++){
+                Building b = tempBuilds.get(i);
+                
+                // 判定權重
+                int rank;
+                boolean isDiffGrid = !graphs.contains(b.power.graph);
+                boolean isNotNode = !(b.block instanceof PowerDistributor); // PowerNode 是 Distributor 的子類
+
+                if(isDiffGrid){
+                    // 順序 1: 非同電區
+                    rank = 0;
+                }else if(isNotNode){
+                    // 順序 2: 同電區且非 PowerDistributor/PowerNode
+                    rank = 1;
+                }else{
+                    // 順序 3: 同電區且是節點 (最近的)
+                    rank = 2;
+                }
+
+                float dist = b.dst2(tile);
+
+                // 比較最優項
+                if(rank < bestRank || (rank == bestRank && dist < bestDist)){
+                    bestRank = rank;
+                    bestDist = dist;
+                    best = b;
+                    bestIndex = i;
+                }
+            }
+
+            if(best != null){
+                // 輸出給呼叫端
+                others.get(best);
+                count++;
+
+                // 關鍵：更新已連接的電網，這會讓同電區的其他建築在下一次循環中 rank 變大
+                graphs.add(best.power.graph);
+
+                // 從待選清單移除已選對象
+                tempBuilds.remove(bestIndex);
+            } else {
+                break;
+            }
+        }
+    }
+
+
     //TODO code duplication w/ method above?
     /** Iterates through linked nodes of a block at a tile. All returned buildings are power nodes. */
     public static void getNodeLinks(Tile tile, Block block, Team team, Cons<Building> others){
@@ -419,11 +515,21 @@ public class PowerNode extends PowerBlock{
             if(this == other){ //double tapped
                 if(other.power.links.size == 0){ //find links
                     Seq<Point2> points = new Seq<>();
-                    getPotentialLinks(tile, team, link -> {
-                        if(!insulated(this, link) && points.size < maxNodes){
-                            points.add(new Point2(link.tileX() - tile.x, link.tileY() - tile.y));
-                        }
-                    });
+
+                    if (Core.input.keyDown(Binding.diagonalPlacement)) {
+                        getPotentialLinksFull(tile, team, link -> {
+                            if(!insulated(this, link) && points.size < maxNodes){
+                                points.add(new Point2(link.tileX() - tile.x, link.tileY() - tile.y));
+                            }
+                        });
+                    } else {
+                        getPotentialLinks(tile, team, link -> {
+                            if(!insulated(this, link) && points.size < maxNodes){
+                                points.add(new Point2(link.tileX() - tile.x, link.tileY() - tile.y));
+                            }
+                        });
+                    }
+
                     configure(points.toArray(Point2.class));
                 }else{ //clear links
                     configure(new Point2[0]);
