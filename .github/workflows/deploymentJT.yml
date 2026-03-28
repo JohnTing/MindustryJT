@@ -79,7 +79,7 @@ jobs:
         cp server/build/libs/server-release.jar server/build/libs/Mindustry-BE-Server-${RELEASE_VERSION}.jar
         cp android/build/outputs/apk/release/android-release.apk android/build/outputs/apk/release/Mindustry-BE-Android-${RELEASE_VERSION}.apk
         echo "JDK directory: $JDK_DIR"
-        ./gradlew desktop:dist -Pbuildversion=${RELEASE_VERSION} -Prelease -PversionType=bleeding-edge -PshowCommitHash desktop:packrLinux64 desktop:packrWindows64 desktop:packrMacOS --stacktrace
+        # ./gradlew desktop:dist -Pbuildversion=${RELEASE_VERSION} -Prelease -PversionModifier=steam -PversionType=bleeding-edge -PshowCommitHash desktop:packrLinux64 desktop:packrWindows64 desktop:packrMacOS --stacktrace
         echo $PWD
         ls deploy/
     
