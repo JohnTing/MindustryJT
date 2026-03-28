@@ -50,7 +50,7 @@ jobs:
       run: |
         cd ..
         git clone --depth=1 --branch=master https://github.com/Anuken/Arc
-        cd Mindustry
+        cd MindustryJT
         echo "BODY=$(git rev-parse HEAD)" >> $GITHUB_ENV
         ./gradlew pack
         ./gradlew desktop:dist server:dist core:depsJar android:assembleRelease -Pbuildversion=${RELEASE_VERSION} -PshowCommitHash --stacktrace
