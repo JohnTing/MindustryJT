@@ -9,6 +9,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # --- 新增權限設定 ---
+    permissions:
+      contents: write
+    # ------------------
 
     steps:
     - uses: actions/checkout@v2
@@ -56,12 +60,14 @@ jobs:
         git clone --depth=1 --branch=master https://github.com/Anuken/Arc
         git clone --depth=1 --branch=master https://github.com/Anuken/Mindustry
         cd Mindustry
-        echo "BODY=$(git rev-parse HEAD)" >> $GITHUB_ENV
-        sed -i 's/applicationId "io.anuke.mindustry"/applicationId "io.anuke.mindustry.be"/g' android/build.gradle
-        sed -i 's/"io.anuke.mindustry"/"io.anuke.mindustry.be"/g' android/AndroidManifest.xml
-        sed -i 's/Mindustry/Mindustry BE/g' android/res/values/strings.xml
+        #echo "BODY=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        #sed -i 's/applicationId "io.anuke.mindustry"/applicationId "io.anuke.mindustry.be"/g' android/build.gradle
+        #sed -i 's/"io.anuke.mindustry"/"io.anuke.mindustry.be"/g' android/AndroidManifest.xml
+        #sed -i 's/Mindustry/Mindustry BE/g' android/res/values/strings.xml
+        
         ./gradlew pack
         ./gradlew desktop:dist server:dist core:depsJar android:assembleRelease -Pbuildversion=${RELEASE_VERSION} -PversionType=bleeding-edge -PshowCommitHash --stacktrace
+        
         cp desktop/build/libs/Mindustry.jar desktop/build/libs/Mindustry-BE-Desktop-${RELEASE_VERSION}.jar
         cp server/build/libs/server-release.jar server/build/libs/Mindustry-BE-Server-${RELEASE_VERSION}.jar
         cp android/build/outputs/apk/release/android-release.apk android/build/outputs/apk/release/Mindustry-BE-Android-${RELEASE_VERSION}.apk
@@ -81,6 +87,6 @@ jobs:
         target_commitish: ${{ github.sha }}
         prerelease: true
         files: |
-          desktop/build/libs/*.jar
-          server/build/libs/server-release.jar
-          android/build/outputs/apk/release/android-release.apk
+          Mindustry/desktop/build/libs/*.jar
+          Mindustry/server/build/libs/server-release.jar
+          Mindustry/android/build/outputs/apk/release/android-release.apk
