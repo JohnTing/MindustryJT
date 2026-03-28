@@ -63,7 +63,26 @@ jobs:
     # ==========================================
     # 核心步驟：同一次編譯 (跟原版一樣一個指令出所有包)
     # ==========================================
-    - name: Build All Artifacts
+
+    - name: Build android:assembleRelease 
+      env:
+        keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
+        keystore_alias: ${{ secrets.KEYSTORE_ALIAS }}
+        keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
+      run: >
+        ./gradlew 
+        android:assembleRelease 
+        pack 
+        desktop:dist 
+        server:dist 
+        -Pbuildversion=${{ env.BUILD_VERSION }} 
+        -PshowCommitHash 
+        --stacktrace 
+        --no-daemon 
+        --no-configuration-cache
+
+
+    - name: Build desktop:dist server:dist 
       env:
         keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
         keystore_alias: ${{ secrets.KEYSTORE_ALIAS }}
@@ -72,13 +91,11 @@ jobs:
         ./gradlew pack 
         desktop:dist 
         server:dist 
-        android:assembleRelease 
         -Pbuildversion=${{ env.BUILD_VERSION }} 
         -PshowCommitHash 
         --stacktrace 
         --no-daemon 
         --no-configuration-cache
-      # -PversionType=bleeding-edge 
     # ==========================================
     # 發布流程 (保留 JT 版的發布邏輯)
     # ==========================================
