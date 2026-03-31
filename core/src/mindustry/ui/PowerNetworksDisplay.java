@@ -39,10 +39,16 @@ public class PowerNetworksDisplay extends Table {
 
         ObjectSet<PowerGraph> currentGraphs = new ObjectSet<>();
 
-        // 遍歷當前隊伍所有建築，收集唯一的 PowerGraph
+        // 遍歷當前隊伍所有建築，收集 PowerGraph
         for (Building b : Vars.player.team().data().buildings) {
             if (b.block.hasPower && b.power != null && b.power.graph != null) {
-                if (b.power.graph.getTotalBatteryCapacity() > 1f && b.power.graph.getLastPowerProduced() > 1f && b.power.graph.getLastPowerNeeded() > 1f) { // 只顯示有電池且有電量生產/使用的分區
+                int count = 0;
+                if(b.power.graph.getLastPowerProduced() > 0) count++;
+                if(b.power.graph.getLastPowerNeeded() > 0) count++;
+                if(b.power.graph.getLastCapacity() > 50000) count++;
+
+
+                if (count >= 2) {
                     currentGraphs.add(b.power.graph);
                 }
             }
@@ -80,7 +86,7 @@ public class PowerNetworksDisplay extends Table {
             return; // 沒有電網時不顯示任何東西
         }
 
-        for (int i = 0; i < cachedGraphs.size; i++) {
+        for (int i = 0; i < cachedGraphs.size && i <= 3; i++) {
             PowerGraph graph = cachedGraphs.get(i);
             // 建立 Bar 組件 (文字供應器, 顏色供應器, 進度比例供應器)
             Bar powerBar = new Bar(
