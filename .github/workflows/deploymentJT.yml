@@ -59,6 +59,9 @@ jobs:
         keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
         JDK_DIR: /home/runner/jdks/
       run: |
+        echo RELEASE_VERSION=${RELEASE_VERSION}
+        echo "RELEASE_TAG=$UNIQUE_TAG"
+
         git clone --depth=1 --branch=master https://github.com/Anuken/Arc
         # git clone --depth=1 --branch=master https://github.com/Anuken/Mindustry
         # cd Mindustry
