@@ -231,11 +231,27 @@ public class NetClient implements ApplicationListener{
     public static void effectReliable(Effect effect, float x, float y, float rotation, Color color){
         effect(effect, x, y, rotation, color);
     }
-
+    // user , server 對話
     @Remote(targets = Loc.server, variants = Variant.both)
     public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
         if(Vars.ui != null){
             Vars.ui.chatfrag.addMessage(message);
+            Vars.ui.consolefrag.addMessage("sendmessage0:" + message + ":" + unformatted + ":" + playersender);
+
+            if(message != null && message.length() > 1 && unformatted != null && playersender != null) {
+
+
+            LingvaTranslator.translateAsync(Strings.stripColors(message), "auto", "zh_HANT")
+                .thenAccept(result -> {
+                    System.out.println("非同步結果回傳: " + result);
+                    Vars.ui.chatfrag.addMessage("[gray](" + result + ")[]");
+                })
+                .exceptionally(ex -> {
+                    System.err.println("發生錯誤: " + ex.getMessage());
+                    return null;
+                });
+            }
+
             Sounds.uiChat.play();
         }
 
