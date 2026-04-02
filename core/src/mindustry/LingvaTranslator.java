@@ -14,14 +14,59 @@ public class LingvaTranslator {
 
     private static final String BASE_URL = "https://lingva.ml/api/v1";
 
+    public static final java.util.Map<String, String> LANGUAGE_MAP = new java.util.LinkedHashMap<>();
+
+    static {
+
+        LANGUAGE_MAP.put("ca", "ca");         // Català
+        LANGUAGE_MAP.put("id_ID", "id");      // Bahasa Indonesia
+        LANGUAGE_MAP.put("da", "da");         // Dansk
+        LANGUAGE_MAP.put("de", "de");         // Deutsch
+        LANGUAGE_MAP.put("et", "et");         // Eesti
+        LANGUAGE_MAP.put("en", "en");         // English
+        LANGUAGE_MAP.put("es", "es");         // Español
+        LANGUAGE_MAP.put("eu", "eu");         // Euskara
+        LANGUAGE_MAP.put("fil", "tl");        // Filipino -> Tagalog
+        LANGUAGE_MAP.put("fr", "fr");         // Français
+        LANGUAGE_MAP.put("it", "it");         // Italiano
+        LANGUAGE_MAP.put("lt", "lt");         // Lietuvių
+        LANGUAGE_MAP.put("hu", "hu");         // Magyar
+        LANGUAGE_MAP.put("nl", "nl");         // Nederlands
+        LANGUAGE_MAP.put("pl", "pl");         // Polski
+        LANGUAGE_MAP.put("pt_BR", "pt");      // Português (Brasil)
+        LANGUAGE_MAP.put("pt_PT", "pt");      // Português (Portugal)
+        LANGUAGE_MAP.put("ro", "ro");         // Română
+        LANGUAGE_MAP.put("fi", "fi");         // Suomi
+        LANGUAGE_MAP.put("sv", "sv");         // Svenska
+        LANGUAGE_MAP.put("vi", "vi");         // Tiếng Việt
+        LANGUAGE_MAP.put("tk", "tk");         // Türkmen dili
+        LANGUAGE_MAP.put("tr", "tr");         // Türkçe
+        LANGUAGE_MAP.put("cs", "cs");         // Čeština
+        LANGUAGE_MAP.put("be", "be");         // Беларуская
+        LANGUAGE_MAP.put("bg", "bg");         // Български
+        LANGUAGE_MAP.put("ru", "ru");         // Русский
+        LANGUAGE_MAP.put("sr", "sr");         // Српски
+        LANGUAGE_MAP.put("uk_UA", "uk");      // Українська
+        LANGUAGE_MAP.put("th", "th");         // ไทย
+        LANGUAGE_MAP.put("zh_CN", "zh");      // 简体中文 -> Chinese (Simplified)
+        LANGUAGE_MAP.put("zh_TW", "zh_HANT"); // 正體中文 -> Chinese (Traditional)
+        LANGUAGE_MAP.put("ja", "ja");         // 日本語
+        LANGUAGE_MAP.put("ko", "ko");         // 한국어
+    }
+
     /**
      * 非同步翻譯 function
      * @param text   要翻譯的文字
      * @param source 來源語言 (如 "en", "auto")
-     * @param target 目標語言 (如 "zh-TW")
+     * @param target 目標語言 (如 "zh_HANT")
      * @return CompletableFuture<String> 翻譯結果
      */
-    public static CompletableFuture<String> translateAsync(String text, String source, String target) {
+    public static CompletableFuture<String> translateAsync(String text, String source) {
+        String target = LANGUAGE_MAP.getOrDefault(arc.Core.settings.getString("translatorLanguage", "none"), "");
+        if (target.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         return CompletableFuture.supplyAsync(() -> {
             try {
                 // 1. URL 編碼處理

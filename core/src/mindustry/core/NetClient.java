@@ -236,18 +236,17 @@ public class NetClient implements ApplicationListener{
     public static void sendMessage(String message, @Nullable String unformatted, @Nullable Player playersender){
         if(Vars.ui != null){
             Vars.ui.chatfrag.addMessage(message);
-            Vars.ui.consolefrag.addMessage("sendmessage0:" + message + ":" + unformatted + ":" + playersender);
 
             if(message != null && message.length() > 1 && unformatted != null && playersender != null) {
-
-
-            LingvaTranslator.translateAsync(Strings.stripColors(message), "auto", "zh_HANT")
+            LingvaTranslator.translateAsync(Strings.stripColors(message), "auto")
                 .thenAccept(result -> {
-                    System.out.println("非同步結果回傳: " + result);
-                    Vars.ui.chatfrag.addMessage("[gray](" + result + ")[]");
+                    if(result != null && !result.isEmpty()) {
+                        Vars.ui.chatfrag.addMessage("[lightgray](" + result + ")[]");
+                    }
                 })
                 .exceptionally(ex -> {
-                    System.err.println("發生錯誤: " + ex.getMessage());
+                    // System.err.println("發生錯誤: " + ex.getMessage());
+                    Vars.ui.consolefrag.addMessage("翻譯失敗: " + ex.getMessage()); // 改為在遊戲內顯示錯誤
                     return null;
                 });
             }
