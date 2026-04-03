@@ -308,37 +308,54 @@ public class PowerNode extends PowerBlock{
         }
 
         // 3. 動態貪婪選取 (核心邏輯)
-        // 我們最多只需要選出 maxNodes 個建築
+        // 我們最多只需要選出 N 個建築
         int count = 0;
-        while(count < maxNodes && tempBuilds.size > 0){
+        while(count < maxNodes-1 && tempBuilds.size > 0){
             Building best = null;
             int bestRank = 99; // 越小越優先
-            float bestDist = Float.MAX_VALUE;
+            
+            // 【修改點 1】：因為要找最遠的，所以初始距離設為 -1 (或 0)
+            float bestDist = -1f; 
             int bestIndex = -1;
 
             for(int i = 0; i < tempBuilds.size; i++){
                 Building b = tempBuilds.get(i);
                 
-                // 判定權重
-                int rank;
+                // 判定權重屬性
                 boolean isDiffGrid = !graphs.contains(b.power.graph);
                 boolean isNotNode = !(b.block instanceof PowerDistributor); // PowerNode 是 Distributor 的子類
+                
+                // 新增：判斷是否為優先級戰略建築
+                boolean isPriority = b.block instanceof mindustry.world.blocks.defense.OverdriveProjector || 
+                                     b.block instanceof mindustry.world.blocks.defense.MendProjector || 
+                                     b.block instanceof mindustry.world.blocks.defense.turrets.PowerTurret ||
+                                     b.block instanceof mindustry.world.blocks.defense.ForceProjector;
 
-                if(isDiffGrid){
-                    // 順序 1: 非同電區
+                int rank;
+
+                // 重新分配優先級 (0 為最優先)
+                if(isPriority && isDiffGrid){
+                    // 順序 0: 是優先目標，且處於不同的電網 (首要連接，確保供電)
                     rank = 0;
-                }else if(isNotNode){
-                    // 順序 2: 同電區且非 PowerDistributor/PowerNode
+                }else if(isDiffGrid){
+                    // 順序 1: 處於不同的電網 (優先連接，擴展電網覆蓋)
                     rank = 1;
-                }else{
-                    // 順序 3: 同電區且是節點 (最近的)
+                }else if(isPriority && !isDiffGrid){
+                    // 順序 2: 是優先目標，即使已經在同電網 (提供備用/冗餘連接，防止節點被毀斷電)
                     rank = 2;
+                }else if(isNotNode){
+                    // 順序 3: 
+                    rank = 3;
+                }else{
+                    // 順序 4: 
+                    rank = 4;
                 }
 
                 float dist = b.dst2(tile);
 
                 // 比較最優項
-                if(rank < bestRank || (rank == bestRank && dist < bestDist)){
+                // 【修改點 2】：當 rank 相等時，將 dist < bestDist 改為 dist > bestDist，優先選擇距離更遠的
+                if(rank < bestRank || (rank == bestRank && dist > bestDist)){
                     bestRank = rank;
                     bestDist = dist;
                     best = b;
