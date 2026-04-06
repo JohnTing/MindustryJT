@@ -324,6 +324,15 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
                     Lines.poly(this.x, this.y, 3, (type.damage)/20, this.rotation);
                 }
             }
+            // 直線雷射顯示 (LaserBulletType: Lancer、Malign、Corvus 等)
+            if (type instanceof mindustry.entities.bullet.LaserBulletType laser) {
+                float laserLength = this.fdata;
+                if (laserLength > 0) {
+                    Lines.stroke((type.damage)/100);
+                    Lines.lineAngle(this.x, this.y, this.rotation, laserLength);
+                    Lines.stroke(1f);
+                }
+            }
             Draw.reset();
             return;
         }
