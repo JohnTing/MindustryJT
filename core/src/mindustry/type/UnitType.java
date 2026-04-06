@@ -1532,6 +1532,7 @@ public class UnitType extends UnlockableContent implements Senseable{
                 Draw.rect(shadowRegion, unit.x, unit.y, unit.rotation - 90);
                 Draw.z(Math.min(Layer.darkness, z - 1f));
                 Draw.color(unit.team.color);
+                Draw.alpha(0.8f);
                 Lines.stroke(0.2f + (unit.armor)/20f);
                 //Lines.poly(unit.x, unit.y, 8, (unit.hitSize/2f), unit.rotation);
 
@@ -1546,7 +1547,7 @@ public class UnitType extends UnlockableContent implements Senseable{
                     if(hp > exhpcap) {
                         float exHp = (hp - exhpcap) / 10f;
                         Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(exhpcap) /5f, unit.rotation);
-                        Draw.alpha(0.3f);
+                        Draw.alpha(0.2f);
                         Fill.poly(unit.x, unit.y, 5, (Mathf.sqrt(exhpcap+exHp)) / 5f , unit.rotation);
                         for(int level = 2 ; level * 100_000 < (exhpcap+exHp); level++) {
                             Lines.poly(unit.x, unit.y, 5, Mathf.sqrt(level * 100_000) /5f, unit.rotation);
@@ -1554,7 +1555,7 @@ public class UnitType extends UnlockableContent implements Senseable{
 
                         Draw.alpha(1f);
                     } else {
-                        Draw.alpha(0.3f);
+                        Draw.alpha(0.2f);
                         Fill.poly(unit.x, unit.y, 5, Mathf.sqrt(hp) / 5f, unit.rotation);
                         Draw.alpha(1f);
                     }
