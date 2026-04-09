@@ -311,7 +311,32 @@ abstract class BulletComp implements Timedc, Damagec, Hitboxc, Teamc, Posc, Draw
 
     @Override
     public void draw(){
+        Draw.reset();
         Draw.z(type.layer);
+
+        if( mindustry.CustomClientLogic.hiddenRender() ) {
+            Draw.color(this.team.color);
+            Draw.alpha(0.6f);
+            if(this.x > 0 && this.y > 0) {
+                if (type.splashDamage > 1) {
+                    Lines.circle(this.x, this.y, (type.splashDamage)/20);
+                }
+                if (type.damage > 1) {
+                    Lines.poly(this.x, this.y, 3, (type.damage)/20, this.rotation);
+                }
+            }
+            // 直線雷射顯示 (LaserBulletType: Lancer、Malign、Corvus 等)
+            if (type instanceof mindustry.entities.bullet.LaserBulletType laser) {
+                float laserLength = this.fdata;
+                if (laserLength > 0) {
+                    Lines.stroke((type.damage)/100);
+                    Lines.lineAngle(this.x, this.y, this.rotation, laserLength);
+                    Lines.stroke(1f);
+                }
+            }
+            Draw.reset();
+            return;
+        }
 
         if(type.underwater){
             Drawf.underwater(() -> type.draw(self()));
