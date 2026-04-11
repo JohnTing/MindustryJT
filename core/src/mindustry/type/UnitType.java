@@ -1567,15 +1567,22 @@ public class UnitType extends UnlockableContent implements Senseable{
                 if(this instanceof mindustry.type.unit.MissileUnitType missile) {
                     if(missile.weapons.size > 0) {
                         Draw.color(unit.team.color);
+                        Lines.stroke(1f);
+                        Draw.alpha(0.8f);
                         if(unit.x > 0 && unit.y > 0) {
-                            float splashDamage = missile.weapons.get(0).bullet.splashDamage;
-                            float damage = missile.weapons.get(0).bullet.damage;
+                            float splashDamage = 0;
+                            float damage = 0;
+
+                            if(missile.weapons.size > 0){
+                                splashDamage = missile.weapons.get(0).bullet.splashDamage;
+                                damage = missile.weapons.get(0).bullet.damage;
+                            }
 
                             if(splashDamage > 1) {
-                                Lines.circle(unit.x, unit.y, splashDamage/20);
+                                Lines.circle(unit.x, unit.y, Mathf.sqrt(splashDamage * 0.32f*0.5f));
                             }
                             if(damage > 1) {
-                                Lines.poly(unit.x, unit.y, 3, damage/20, unit.rotation - 90);
+                                Lines.poly(unit.x, unit.y, 3, Mathf.sqrt(damage * 0.77f*0.5f), unit.rotation - 90);
                             }
                         }
                         Draw.color();
