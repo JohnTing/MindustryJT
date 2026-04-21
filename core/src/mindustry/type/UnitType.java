@@ -1554,9 +1554,14 @@ public class UnitType extends UnlockableContent implements Senseable{
                         }
 
                         Draw.alpha(1f);
-                    } else {
+                    } else if(hp > maxHp) {
                         Draw.alpha(0.3f);
                         Fill.poly(unit.x, unit.y, 5, Mathf.sqrt(hp) / 5f, unit.rotation);
+                        Draw.alpha(1f);
+                    }
+                    else {
+                        Draw.alpha(0.3f);
+                        Fill.poly(unit.x, unit.y, 5, (hp/maxHp) * Mathf.sqrt(maxHp) / 5f, unit.rotation);
                         Draw.alpha(1f);
                     }
 
