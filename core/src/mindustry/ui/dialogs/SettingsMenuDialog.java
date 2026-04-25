@@ -520,6 +520,45 @@ public class SettingsMenuDialog extends BaseDialog{
         if(!mobile){
             Core.settings.put("swapdiagonal", false);
         }
+        graphics.checkPref("hiddenrender", false);
+        graphics.checkPref("hiddenrenderonbuild", true);
+
+
+        java.util.ArrayList<String> languages = new java.util.ArrayList<>();
+        languages.add("none");
+        languages.add("auto");
+        // LanguageDialog.displayNames
+        for(String key : mindustry.ui.dialogs.LanguageDialog.displayNames.keys()){
+            languages.add(key);
+        }
+        // sort languages by display name, but keep "none" and "auto" at the top
+        languages.subList(2, languages.size()).sort((a, b) -> {
+            String nameA = mindustry.ui.dialogs.LanguageDialog.displayNames.get(a, a);
+            String nameB = mindustry.ui.dialogs.LanguageDialog.displayNames.get(b, b);
+            return nameA.compareTo(nameB);
+        });
+
+
+
+        graphics.sliderPref("Chat Translator", 0, 0, languages.size()-1 , 1, i -> {
+            String str = languages.get(i);
+            if(str.equals("none")){
+                str = "";
+                return "none";
+            }
+            if(str.equals("auto")){
+                str = arc.Core.settings.getString("locale", "default").replace("in_ID", "id_ID");
+                Core.settings.put("translatorLanguage", str);
+                return "auto(" + mindustry.ui.dialogs.LanguageDialog.displayNames.get(str, "error") + ")";
+            }
+            arc.Core.settings.put("translatorLanguage", str);
+            return mindustry.ui.dialogs.LanguageDialog.displayNames.get(str, "error");
+
+        });
+        
+        graphics.sliderPref("hiddenItemTransparency", 50, 0, 100, 10, s -> s == 0 ? "disable": s+"%");
+        graphics.sliderPref("splitpowerwarn", 0, 0, 10000, 100, s -> s == 0 ? "disable": s+"");
+        graphics.sliderPref("removepowerwarn", 0, 0, 10000, 100, s ->  s == 0 ? "disable": s+"");
     }
 
     public void exportData(Fi file) throws IOException{
