@@ -224,8 +224,10 @@ public class BlockInventoryFragment{
         f = (int)f;
         if(f >= 1000000){
             return (int)(f / 1000000f) + "[gray]" + UI.millions;
-        }else if(f >= 1000){
+        }else if(f >= 10000){
             return (int)(f / 1000) + UI.thousands;
+        }else if(f >= 1000){
+            return Mathf.round(f / 1000f, 1) + UI.thousands;
         }else{
             return (int)f + "";
         }
