@@ -123,7 +123,8 @@ public class Teams{
     }
 
     public boolean canInteract(Team team, Team other){
-        return team == other || other == Team.derelict;
+        // return team == other || other == Team.derelict;
+        return true;
     }
 
     /** Do not modify. */
