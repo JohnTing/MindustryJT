@@ -1,4 +1,5 @@
 package mindustry;
+import static mindustry.Vars.world;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,14 +22,20 @@ import arc.util.Strings;
 import mindustry.core.NetClient;
 import mindustry.core.UI;
 import mindustry.core.World;
+import mindustry.game.EventType.BlockBuildBeginEvent;
+import mindustry.game.EventType.BlockBuildEndEvent;
 import mindustry.game.EventType.BuildSelectEvent;
 import mindustry.game.EventType.ConfigEvent;
+import mindustry.game.EventType.TapEvent;
+import mindustry.game.EventType.WorldLoadEndEvent;
 import mindustry.game.Team;
 import mindustry.gen.Building;
 import mindustry.gen.Player;
 import mindustry.gen.Unit;
+import mindustry.net.Administration.ActionType;
 import mindustry.world.Block;
 import mindustry.world.Tile;
+import mindustry.world.blocks.ConstructBlock;
 import mindustry.world.blocks.power.NuclearReactor;
 import mindustry.world.blocks.power.PowerBlock;
 import mindustry.world.blocks.power.PowerGraph;
@@ -38,11 +45,23 @@ import mindustry.world.blocks.storage.CoreBlock.CoreBuild;
 // mindustry.CustomClientLogic
 public class CustomClientLogic {
 
+    public Seq<Seq<String>> tileActions = new Seq<>(0);
+    
     CustomClientLogic() {
         init();
     }
     void init() {
         Events.on(BuildSelectEvent.class, this::handleBuildSelectEvent);
+        Events.run(WorldLoadEndEvent.class, this::handleWorldLoadEndEvent);
+
+        
+        Events.on(BlockBuildBeginEvent.class, this::handleWorldBlockBuildBeginEvent);
+        Events.on(BlockBuildEndEvent.class, this::handleWorldBlockBuildEndEvent);
+
+
+
+        Events.on(TapEvent.class, this::handleWorldTapEvent);
+
     }
 
     static public int getHiddenItemTransparency() {
@@ -52,6 +71,94 @@ public class CustomClientLogic {
     
     private Instant lastWarningTime = Instant.now();
     private int handleWarningCooldown = 3;
+
+    public void handleWorldLoadEndEvent() {
+        int size = Vars.world.tiles.height * Vars.world.tiles.width;
+        tileActions = new Seq<>(size);
+        // 依然需要初始化内部的 Seq
+        for (int i = 0; i < size; i++) {
+            tileActions.add(new Seq<String>());
+        }
+    }
+
+    public void  handleWorldBlockBuildBeginEvent (BlockBuildBeginEvent event) {
+        if(event != null && event.unit != null && event.unit.isPlayer() && event.tile != null && event.tile.build != null) {
+            for (var edge : event.tile.block().getInsideEdges()) {
+                Tile other = world.tile(event.tile.x + edge.x, event.tile.y + edge.y);
+                if (other != null) {
+                    event.tile.build.eachEdge(tile -> handleWorldBuildEvent(event.unit.getPlayer().name(), event.breaking, other));
+                }
+            }
+        }
+    }
+    public void  handleWorldBlockBuildEndEvent (BlockBuildEndEvent event) {
+        if(event != null && event.unit != null && event.unit.isPlayer() && event.tile != null && event.tile.build != null) {
+            for (var edge : event.tile.block().getInsideEdges()) {
+                Tile other = world.tile(event.tile.x + edge.x, event.tile.y + edge.y);
+                if (other != null) {
+                    event.tile.build.eachEdge(tile -> handleWorldBuildEvent(event.unit.getPlayer().name(), event.breaking, other));
+                }
+            }
+        }
+    }
+    public void handleWorldBuildEvent (String name, boolean breaking, Tile tile) {
+
+        if(tile == null) {
+            return;
+        }
+        String blockname = tile.block().name;
+        if(tile.build instanceof mindustry.world.blocks.ConstructBlock.ConstructBuild cBuild) {
+            blockname = cBuild.current.name;
+        }
+
+        String message = String.format("[yellow]%s[] %s %s", name, breaking ? "[red]break[]" : "[green]build[]", blockname);
+
+        var tileAction = tileActions.get(Vars.world.packArray(tile.x, tile.y));
+        if(tileAction.size > 0) {
+            String lastEvent = tileAction.get(tileAction.size -1);
+            if(lastEvent.equals(message)) {
+                return;
+            }
+        }
+        tileAction.add(message);
+    }
+
+    public Tile lastTap;
+    public void handleWorldTapEvent(TapEvent event) {
+
+
+        if(lastTap == null || event.tile == null) {
+            lastTap = event.tile;
+            return;
+        }
+        if(lastTap.pos() != event.tile.pos()) {
+            lastTap = event.tile;
+            return;
+        }
+        if(event.player == null) {
+            return;
+        }
+        if(!event.player.equals(Vars.player)) {
+            return;
+        }
+
+
+        lastTap = event.tile;
+
+        var tileAction = tileActions.get(Vars.world.packArray(lastTap.x, lastTap.y));
+
+        if(tileAction != null) {
+            String message = "";
+
+            for(int i = tileAction.size-1;i >= 0;i--) {
+                if(i != tileAction.size-1) {
+                    message += "\n";
+                }
+                message += tileAction.get(i);
+            }
+            Vars.ui.showLabel(message, 2, 3f, event.tile.worldx(), event.tile.worldy() + 1);
+        }
+    }
     
     public void handleBuildSelectEvent(BuildSelectEvent event) {
         if(event == null) {
