@@ -57,8 +57,9 @@ public class CustomClientLogic {
         
         Events.on(BlockBuildBeginEvent.class, this::handleWorldBlockBuildBeginEvent);
         Events.on(BlockBuildEndEvent.class, this::handleWorldBlockBuildEndEvent);
+        Events.on(BuildSelectEvent.class, this::handleWorldBuildSelectEvent);
 
-
+        
 
         Events.on(TapEvent.class, this::handleWorldTapEvent);
 
@@ -101,6 +102,21 @@ public class CustomClientLogic {
             }
         }
     }
+
+    
+
+    public void  handleWorldBuildSelectEvent (BuildSelectEvent event) {
+        if(event != null && event.builder != null && event.builder.isPlayer() && event.tile != null && event.tile.build != null) {
+            for (var edge : event.tile.block().getInsideEdges()) {
+                Tile other = world.tile(event.tile.x + edge.x, event.tile.y + edge.y);
+                if (other != null && event.breaking) {
+                    event.tile.build.eachEdge(tile -> handleWorldBuildEvent(event.builder.getPlayer().name(), event.breaking, other));
+                }
+            }
+        }
+    }
+
+
     public void handleWorldBuildEvent (String name, boolean breaking, Tile tile) {
 
         if(tile == null) {
@@ -123,16 +139,20 @@ public class CustomClientLogic {
         tileAction.add(message);
     }
 
-    public Tile lastTap;
+    private Tile lastTap;
+    private java.time.Instant lastTapTime = Instant.now();
+
     public void handleWorldTapEvent(TapEvent event) {
 
 
         if(lastTap == null || event.tile == null) {
             lastTap = event.tile;
+            lastTapTime = Instant.now();
             return;
         }
         if(lastTap.pos() != event.tile.pos()) {
             lastTap = event.tile;
+            lastTapTime = Instant.now();
             return;
         }
         if(event.player == null) {
@@ -141,7 +161,10 @@ public class CustomClientLogic {
         if(!event.player.equals(Vars.player)) {
             return;
         }
-
+        if(!lastTapTime.plusMillis(300).isAfter(Instant.now())){
+            return;
+        }
+        lastTapTime = Instant.now();
 
         lastTap = event.tile;
 
