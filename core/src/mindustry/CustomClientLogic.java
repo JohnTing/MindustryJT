@@ -140,44 +140,38 @@ public class CustomClientLogic {
     }
 
     private Tile lastTap;
+    private int lastTapNum = 0;
     private java.time.Instant lastTapTime = Instant.now();
 
     public void handleWorldTapEvent(TapEvent event) {
 
 
-        if(lastTap == null || event.tile == null) {
-            lastTap = event.tile;
-            lastTapTime = Instant.now();
-            return;
+        if(lastTap != null && event.tile != null && lastTap.pos() == event.tile.pos()  && 
+                event.player != null && event.player.equals(Vars.player) && 
+                lastTapTime.plusMillis(300).isAfter(Instant.now())) {
+            lastTapNum ++;
+            if(lastTapNum > 2 ) {
+                showWorldTapMessage(event);
+            }
+        } else {
+            lastTapNum = 0;
         }
-        if(lastTap.pos() != event.tile.pos()) {
-            lastTap = event.tile;
-            lastTapTime = Instant.now();
-            return;
-        }
-        if(event.player == null) {
-            return;
-        }
-        if(!event.player.equals(Vars.player)) {
-            return;
-        }
-        if(!lastTapTime.plusMillis(300).isAfter(Instant.now())){
-            return;
-        }
+        lastTap = event.tile;
         lastTapTime = Instant.now();
 
-        lastTap = event.tile;
+    }
 
+    public void showWorldTapMessage(TapEvent event) {
         var tileAction = tileActions.get(Vars.world.packArray(lastTap.x, lastTap.y));
 
         if(tileAction != null) {
             String message = "";
 
-            for(int i = tileAction.size-1;i >= 0;i--) {
-                if(i != tileAction.size-1) {
+            for(int i = 0 ;i < 4 && i < tileAction.size;i++) {
+                if(i != 0) {
                     message += "\n";
                 }
-                message += tileAction.get(i);
+                message += tileAction.get(tileAction.size - 1 - i);
             }
             Vars.ui.showLabel(message, 2, 3f, event.tile.worldx(), event.tile.worldy() + 1);
         }
