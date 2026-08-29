@@ -724,6 +724,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             }
         }
         if(player != null) build.updateLastAccess(player);
+        mindustry.CustomClientLogic.handleConfigEvent(player, build, value);
         build.configured(player == null || player.dead() ? null : player.unit(), value);
         Events.fire(new ConfigEvent(build, player, value));
     }
@@ -746,13 +747,17 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             throw new ValidateException(player, "Player cannot control a building.");
         }
 
-        if(player.team() == build.team && build.canControlSelect(player.unit())){
+        if(build.canControlSelect(player.unit())){
+            Team tempTeam = build.team();
             var before = player.unit();
 
             Call.unitBuildingControlSelect(player.unit(), build);
 
             if(!before.dead && before.spawnedByCore && !before.isPlayer()){
                 Call.unitDespawn(before);
+            }
+            if(!net.active()){
+                player.team(tempTeam);
             }
         }
     }
@@ -780,7 +785,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(unit == null){ //just clear the unit (is this used?)
             player.clearUnit();
             //make sure it's AI controlled, so players can't overwrite each other
-        }else if(unit.isAI() && unit.team == player.team() && !unit.dead && unit.playerControllable()){
+        // }else if(unit.isAI() && unit.team == player.team() && !unit.dead && unit.playerControllable()){
+        }else if(unit.isAI() && !unit.dead && unit.playerControllable()){
             if(net.client() && player.isLocal()){
                 player.justSwitchFrom = player.unit();
                 player.justSwitchTo = unit;
@@ -789,7 +795,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             //TODO range check for docking?
             var before = player.unit();
 
+            Team tempTeam = unit.team();
             player.unit(unit);
+            if(!net.active()){
+                player.team(tempTeam);
+            }
 
             if(before != null){
                 if(before.spawnedByCore){
@@ -1092,19 +1102,34 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public void selectUnitsRect(){
         if(commandMode && commandRect){
             if(!tappedOne){
-                var units = selectedCommandUnits(commandRectX, commandRectY, input.mouseWorldX() - commandRectX, input.mouseWorldY() - commandRectY);
+                float commandRectW = input.mouseWorldX() - commandRectX;
+                float commandRectH = input.mouseWorldY() - commandRectY;
+                var units = selectedCommandUnits(commandRectX, commandRectY, commandRectW, commandRectH);
+                var buildings = selectedCommandBuildings(commandRectX, commandRectY, commandRectW, commandRectH);
+
+                //in hidden mode with 'prefer buildings', a range containing both buildings and units selects only buildings
+                boolean preferBuildings = mindustry.CustomClientLogic.hiddenRender() && mindustry.CustomClientLogic.hiddenRenderPriorityBuild();
+
                 if(multiUnitSelect()){
                     //tiny brain method of unique addition
-                    selectedUnits.removeAll(units);
+                    if(preferBuildings && !buildings.isEmpty()){
+                        commandBuildings.addAll(buildings);
+                    }else{
+                        selectedUnits.removeAll(units);
+                    }
                 }else{
                     //nothing selected, clear units
                     selectedUnits.clear();
-                }
-                commandBuildings.clear();
+                    commandBuildings.clear();
 
-                selectedUnits.addAll(units);
-                if(selectedUnits.isEmpty()){
-                    commandBuildings.addAll(selectedCommandBuildings(commandRectX, commandRectY, input.mouseWorldX() - commandRectX, input.mouseWorldY() - commandRectY));
+                    if(preferBuildings && !buildings.isEmpty()){
+                        commandBuildings.addAll(buildings);
+                    }else{
+                        selectedUnits.addAll(units);
+                        if(selectedUnits.isEmpty()){
+                            commandBuildings.addAll(buildings);
+                        }
+                    }
                 }
                 Events.fire(Trigger.unitCommandChange);
             }
@@ -1351,13 +1376,21 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(commandRect && commandMode){
             float x2 = input.mouseWorldX(), y2 = input.mouseWorldY();
             var units = selectedCommandUnits(commandRectX, commandRectY, x2 - commandRectX, y2 - commandRectY);
-            for(var unit : units){
-                drawCommand(unit);
-            }
-            if(units.isEmpty()){
-                var buildings = selectedCommandBuildings(commandRectX, commandRectY, x2 - commandRectX, y2 - commandRectY);
+            var buildings = selectedCommandBuildings(commandRectX, commandRectY, x2 - commandRectX, y2 - commandRectY);
+            boolean preferBuildings = mindustry.CustomClientLogic.hiddenRender() && mindustry.CustomClientLogic.hiddenRenderPriorityBuild();
+
+            if(preferBuildings && !buildings.isEmpty()){
                 for(var build : buildings){
                     drawCommand(build);
+                }
+            }else{
+                for(var unit : units){
+                    drawCommand(unit);
+                }
+                if(units.isEmpty()){
+                    for(var build : buildings){
+                        drawCommand(build);
+                    }
                 }
             }
 
@@ -1984,7 +2017,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(build.isCommandable() && commandMode){
             //TODO handled in tap.
             consumed = true;
-        }else if(build.block.configurable && build.interactable(player.team())){ //check if tapped block is configurable
+        //}else if(build.block.configurable && build.interactable(player.team())){ //check if tapped block is configurable
+        // check enemy 
+        }else if(build.block.configurable){
             consumed = true;
             if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
             //alternatively, the current selected block can 'agree' to switch config tiles
@@ -2013,7 +2048,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         //consume tap event if necessary
         if(build.interactable(player.team()) && build.block.consumesTap){
             consumed = true;
-        }else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
+        //}else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
+        
+        // check enemy item
+        }else if(build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
             if(build.block.hasItems && build.items.total() > 0){
                 inv.showFor(build);
                 consumed = true;
@@ -2146,7 +2184,22 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     public @Nullable Unit selectedUnit(){
+
+        // select building only
+        if(mindustry.CustomClientLogic.hiddenRender() && !mindustry.CustomClientLogic.hiddenRenderPriorityBuild()) {
+            Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+            // if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
+            if(build instanceof ControlBlock cont && cont.canControl() && cont.unit() != player.unit() && cont.unit().isAI()){
+                return cont.unit();
+            }
+            return null;
+        }
+
         Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.playerControllable());
+        if(unit == null) { 
+            unit = Units.closestEnemy(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.playerControllable());
+        }
+
         if(unit != null){
             unit.hitbox(Tmp.r1);
             Tmp.r1.grow(6f);
@@ -2156,7 +2209,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         }
 
         Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
+        // if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
+        if(build instanceof ControlBlock cont && cont.canControl() && cont.unit() != player.unit() && cont.unit().isAI()){
             return cont.unit();
         }
 
@@ -2165,7 +2219,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     public @Nullable Building selectedControlBuild(){
         Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && build.team == player.team()){
+        if(build != null && !player.dead() && build.canControlSelect(player.unit())){
             return build;
         }
         return null;
@@ -2174,6 +2228,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public @Nullable Unit selectedCommandUnit(float x, float y){
         var tree = player.team().data().tree();
         tmpUnits.clear();
+        if(mindustry.CustomClientLogic.hiddenRender() && !mindustry.CustomClientLogic.hiddenRenderPriorityBuild()) {
+            return null;
+        }
         float rad = 4f;
         tree.intersect(x - rad/2f, y - rad/2f, rad, rad, tmpUnits);
         return tmpUnits.min(u -> u.isCommandable(), u -> u.dst(x, y) - u.hitSize/2f);
@@ -2209,6 +2266,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public Seq<Unit> selectedCommandUnits(float x, float y, float w, float h, Boolf<Unit> predicate){
         var tree = player.team().data().tree();
         tmpUnits.clear();
+        if(mindustry.CustomClientLogic.hiddenRender() && !mindustry.CustomClientLogic.hiddenRenderPriorityBuild()) {
+            return tmpUnits;
+        }
+
         float rad = 4f;
         tree.intersect(Tmp.r1.set(x - rad/2f, y - rad/2f, rad*2f + w, rad*2f + h).normalize(), tmpUnits);
         tmpUnits.removeAll(u -> !u.isCommandable() || !predicate.get(u));
