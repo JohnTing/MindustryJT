@@ -315,8 +315,8 @@ public class CustomClientLogic {
         return !Vars.headless && hiddenRender() && arc.Core.settings.getBool("hiddenrendernofog", false);
     }
 
-    public static boolean hiddenControlUnits() {
-        return arc.Core.settings.getBool("hiddenrendercontrol", true);
+    public static boolean hiddenRenderPriorityBuild() {
+        return arc.Core.settings.getBool("hiddenrenderprioritybuild", true);
     }
 
     private static final Seq<Building> outArray1 = new Seq<>();
