@@ -1576,8 +1576,8 @@ public class UnitType extends UnlockableContent implements Senseable{
                 }
                 Draw.color();
                 Draw.reset();
+                return;
             }
-            return;
         }
 
         if(!isPayload && (unit.isFlying() || shadowElevation > 0)){
