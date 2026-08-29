@@ -315,6 +315,10 @@ public class CustomClientLogic {
         return !Vars.headless && hiddenRender() && arc.Core.settings.getBool("hiddenrendernofog", false);
     }
 
+    public static boolean hiddenControlUnits() {
+        return arc.Core.settings.getBool("hiddenrendercontrol", true);
+    }
+
     private static final Seq<Building> outArray1 = new Seq<>();
     private static final Seq<Building> outArray2 = new Seq<>();
 

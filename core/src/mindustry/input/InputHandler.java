@@ -2163,7 +2163,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public @Nullable Unit selectedUnit(){
 
         // select building only
-        if(mindustry.CustomClientLogic.hiddenRender()) {
+        if(mindustry.CustomClientLogic.hiddenRender() && !mindustry.CustomClientLogic.hiddenControlUnits()) {
             Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
             // if(build instanceof ControlBlock cont && cont.canControl() && build.team == player.team() && cont.unit() != player.unit() && cont.unit().isAI()){
             if(build instanceof ControlBlock cont && cont.canControl() && cont.unit() != player.unit() && cont.unit().isAI()){
@@ -2205,7 +2205,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public @Nullable Unit selectedCommandUnit(float x, float y){
         var tree = player.team().data().tree();
         tmpUnits.clear();
-        if(mindustry.CustomClientLogic.hiddenRender()) {
+        if(mindustry.CustomClientLogic.hiddenRender() && !mindustry.CustomClientLogic.hiddenControlUnits()) {
             return null;
         }
         float rad = 4f;
@@ -2243,7 +2243,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public Seq<Unit> selectedCommandUnits(float x, float y, float w, float h, Boolf<Unit> predicate){
         var tree = player.team().data().tree();
         tmpUnits.clear();
-        if(mindustry.CustomClientLogic.hiddenRender()) {
+        if(mindustry.CustomClientLogic.hiddenRender() && !mindustry.CustomClientLogic.hiddenControlUnits()) {
             return tmpUnits;
         }
 
