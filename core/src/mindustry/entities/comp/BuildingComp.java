@@ -2231,7 +2231,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     @Replace
     @Override
     public boolean inFogTo(Team viewer){
-        if(team == viewer || !state.rules.fog) return false;
+        if(team == viewer || !state.rules.fog || mindustry.CustomClientLogic.hiddenRenderIgnoreFog()) return false;
 
         int size = block.size, of = block.sizeOffset, tx = tile.x, ty = tile.y;
 

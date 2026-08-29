@@ -576,6 +576,7 @@ public class SettingsMenuDialog extends BaseDialog{
         }
         graphics.checkPref("hiddenrender", false);
         graphics.checkPref("hiddenrenderonbuild", true);
+        graphics.checkPref("hiddenrendernofog", true);
 
 
         java.util.ArrayList<String> languages = new java.util.ArrayList<>();

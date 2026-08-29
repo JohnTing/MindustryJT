@@ -353,7 +353,7 @@ public class Renderer implements ApplicationListener{
             Draw.draw(Layer.light, lights::draw);
         }
 
-        if(enableDarkness){
+        if(enableDarkness && !mindustry.CustomClientLogic.hiddenRenderIgnoreFog()){
             Draw.draw(Layer.darkness, blocks::drawDarkness);
         }
 
@@ -402,7 +402,7 @@ public class Renderer implements ApplicationListener{
         Draw.reset();
 
         Draw.draw(Layer.overlayUI, overlays::drawTop);
-        if(state.rules.fog) Draw.draw(Layer.fogOfWar, fog::drawFog);
+        if(state.rules.fog && !mindustry.CustomClientLogic.hiddenRenderIgnoreFog()) Draw.draw(Layer.fogOfWar, fog::drawFog);
         Draw.draw(Layer.space, () -> {
             if(launchAnimator == null || landTime <= 0f) return;
             launchAnimator.drawLaunch();

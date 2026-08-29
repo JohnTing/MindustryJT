@@ -311,6 +311,10 @@ public class CustomClientLogic {
         return arc.Core.settings.getBool("hiddenrender") || (arc.Core.settings.getBool("hiddenrenderonbuild") && mindustry.Vars.control.input.isPlacing()); 
     }
 
+    public static boolean hiddenRenderIgnoreFog() {
+        return !Vars.headless && hiddenRender() && arc.Core.settings.getBool("hiddenrendernofog", false);
+    }
+
     private static final Seq<Building> outArray1 = new Seq<>();
     private static final Seq<Building> outArray2 = new Seq<>();
 
