@@ -420,7 +420,9 @@ public class DesktopInput extends InputHandler{
             }
         }
 
-        if(!scene.hasMouse() && !locked && state.rules.possessionAllowed){
+        //in hidden mode, the player cannot enter(possess) units, only select units in range
+        boolean hiddenMode = mindustry.CustomClientLogic.hiddenRender();
+        if(!scene.hasMouse() && !locked && state.rules.possessionAllowed && !hiddenMode){
             if(Core.input.keyDown(Binding.control) && Core.input.keyTap(Binding.select)){
                 Unit on = selectedUnit();
                 var build = selectedControlBuild();
