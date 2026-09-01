@@ -89,6 +89,17 @@ public class OverlayRenderer{
     }
 
     public void drawTop(){
+        //in hide mode, draw a dashed line from each remote player to their pointing location
+        if(mindustry.CustomClientLogic.hiddenRender()){
+            for(Player other : Groups.player){
+                if(other != player && !other.dead() && other.unit() != null
+                && !other.unit().inFogTo(player.team())
+                && Core.camera.bounds(Tmp.r2).overlaps(other.x, other.y, 0f, 0f)){
+                    Drawf.dashLineDst(other.color, other.x, other.y, other.mouseX, other.mouseY);
+                }
+            }
+            Draw.reset();
+        }
 
         if(!player.dead() && ui.hudfrag.shown){
             if(Core.settings.getBool("playerindicators")){
