@@ -721,7 +721,7 @@ public class MobileInput extends InputHandler implements GestureListener{
                 if(!hiddenMode && unitTapped != null && state.rules.possessionAllowed && unitTapped.isAI() && unitTapped.team == player.team() && !unitTapped.dead && unitTapped.playerControllable()){
                     Call.unitControl(player, unitTapped);
                     recentRespawnTimer = 1f;
-                }else if(!hiddenMode && buildingTapped != null && state.rules.possessionAllowed){
+                }else if(buildingTapped != null && state.rules.possessionAllowed){
                     Call.buildingControlSelect(player, buildingTapped);
                     recentRespawnTimer = 1f;
                 }else if(!checkConfigTap() && !tryBeginMine(cursor)){
