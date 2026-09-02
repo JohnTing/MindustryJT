@@ -95,7 +95,7 @@ public class OverlayRenderer{
                 if(other != player && !other.dead() && other.unit() != null
                 && !other.unit().inFogTo(player.team())
                 && Core.camera.bounds(Tmp.r2).overlaps(other.x, other.y, 0f, 0f)){
-                    Drawf.dashLineDst(other.color, other.x, other.y, other.mouseX, other.mouseY);
+                    Drawf.dashLineDst(other.color.a(0.5f), other.x, other.y, other.mouseX, other.mouseY);
                 }
             }
             Draw.reset();
