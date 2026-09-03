@@ -290,6 +290,7 @@ public class NetClient implements ApplicationListener{
             Vars.ui.chatfrag.addMessage(message);
 
             if(message != null && message.length() > 1 && unformatted != null && playersender != null) {
+            /*
             LingvaTranslator.translateAsync(Strings.stripColors(message), "auto")
                 .thenAccept(result -> {
                     if(result != null && !result.isEmpty()) {
@@ -300,7 +301,7 @@ public class NetClient implements ApplicationListener{
                     // System.err.println("發生錯誤: " + ex.getMessage());
                     Vars.ui.consolefrag.addMessage("翻譯失敗: " + ex.getMessage()); // 改為在遊戲內顯示錯誤
                     return null;
-                });
+                });*/
             }
 
             Sounds.uiChat.play();
