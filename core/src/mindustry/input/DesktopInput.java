@@ -426,7 +426,7 @@ public class DesktopInput extends InputHandler{
             if(Core.input.keyDown(Binding.control) && Core.input.keyTap(Binding.select)){
                 Unit on = selectedUnit();
                 var build = selectedControlBuild();
-                if(on != null && !hiddenMode){
+                if(on != null && (!hiddenMode || on instanceof mindustry.gen.BlockUnitc)){
                     Call.unitControl(player, on);
                     shouldShoot = false;
                     recentRespawnTimer = 1f;
