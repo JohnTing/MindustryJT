@@ -714,8 +714,11 @@ public class MobileInput extends InputHandler implements GestureListener{
                 //reset payload target
                 payloadTarget = null;
 
+                //in hidden mode, the player cannot enter(possess) units, only select units in range
+                boolean hiddenMode = mindustry.CustomClientLogic.hiddenRender();
+
                 //control a unit/block detected on first tap of double-tap
-                if(unitTapped != null && state.rules.possessionAllowed && unitTapped.isAI() && unitTapped.team == player.team() && !unitTapped.dead && unitTapped.playerControllable()){
+                if(!hiddenMode && unitTapped != null && state.rules.possessionAllowed && unitTapped.isAI() && unitTapped.team == player.team() && !unitTapped.dead && unitTapped.playerControllable()){
                     Call.unitControl(player, unitTapped);
                     recentRespawnTimer = 1f;
                 }else if(buildingTapped != null && state.rules.possessionAllowed){
