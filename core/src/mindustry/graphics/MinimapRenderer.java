@@ -200,7 +200,7 @@ public class MinimapRenderer{
 
         Draw.reset();
 
-        if(state.rules.fog){
+        if(state.rules.fog && !mindustry.CustomClientLogic.hiddenRenderIgnoreFog()){
             if(fullView){
                 float z = zoom;
                 //max zoom out fixes everything, somehow?

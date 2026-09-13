@@ -89,6 +89,17 @@ public class OverlayRenderer{
     }
 
     public void drawTop(){
+        //in hide mode, draw a dashed line from each remote player to their pointing location
+        if(mindustry.CustomClientLogic.hiddenRender()){
+            for(Player other : Groups.player){
+                if(other != player && !other.dead() && other.unit() != null
+                && !other.unit().inFogTo(player.team())
+                && Core.camera.bounds(Tmp.r2).overlaps(other.x, other.y, 0f, 0f)){
+                    Drawf.dashLineDst(other.color.a(0.5f), other.x, other.y, other.mouseX, other.mouseY);
+                }
+            }
+            Draw.reset();
+        }
 
         if(!player.dead() && ui.hudfrag.shown()){
             if(Core.settings.getBool("playerindicators")){
@@ -123,8 +134,10 @@ public class OverlayRenderer{
 
         InputHandler input = control.input;
 
+       boolean hiddenMode = mindustry.CustomClientLogic.hiddenRender();
         Sized select = input.selectedUnit();
-        if(select == null) select = input.selectedControlBuild();
+        if(select == null || hiddenMode && !(select instanceof BlockUnitc)) select = input.selectedControlBuild();
+        
         if(!Core.input.keyDown(Binding.control) || !state.rules.possessionAllowed) select = null;
 
         unitFade = Mathf.lerpDelta(unitFade, Mathf.num(select != null), 0.1f);
@@ -216,7 +229,8 @@ public class OverlayRenderer{
             Vec2 vec = Core.input.mouseWorld(input.getMouseX(), input.getMouseY());
             Building build = world.buildWorld(vec.x, vec.y);
 
-            if(build != null && build.team == player.team()){
+            // if(build != null && build.team == player.team()){
+            if(build != null){
                 build.drawSelect();
                 if(!build.enabled && build.block.drawDisabled){
                    build.drawDisabled();

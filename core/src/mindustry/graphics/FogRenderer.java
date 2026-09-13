@@ -109,16 +109,18 @@ public final class FogRenderer{
         }
         dynamicFog.getTexture().setFilter(TextureFilter.linear);
 
-        Draw.shader(Shaders.fog);
-        Draw.color(state.rules.dynamicColor, Float.isNaN(state.rules.dynamicColor.a) ? 0.5f : Math.max(0.5f, state.rules.dynamicColor.a));
-        Draw.fbo(dynamicFog.getTexture(), world.width(), world.height(), tilesize);
-        //TODO ai check?
-        if(state.rules.staticFog){
-            //TODO why does this require a half-tile offset while dynamic does not
-            Draw.color(state.rules.staticColor, 1f);
-            Draw.fbo(staticFog.getTexture(), world.width(), world.height(), tilesize, tilesize/2f);
+        if(!mindustry.CustomClientLogic.hiddenRenderIgnoreFog()){
+            Draw.shader(Shaders.fog);
+            Draw.color(state.rules.dynamicColor, Float.isNaN(state.rules.dynamicColor.a) ? 0.5f : Math.max(0.5f, state.rules.dynamicColor.a));
+            Draw.fbo(dynamicFog.getTexture(), world.width(), world.height(), tilesize);
+            //TODO ai check?
+            if(state.rules.staticFog){
+                //TODO why does this require a half-tile offset while dynamic does not
+                Draw.color(state.rules.staticColor, 1f);
+                Draw.fbo(staticFog.getTexture(), world.width(), world.height(), tilesize, tilesize/2f);
+            }
+            Draw.shader();
         }
-        Draw.shader();
     }
 
     void poly(float x, float y, float rad){
