@@ -216,11 +216,16 @@ public class Reconstructor extends UnitBlock{
 
             var group = new ButtonGroup<ImageButton>();
             group.setMinCheckCount(0);
-            int i = 0, columns = 5;
+            int i = 0, columns = 4;
 
             table.background(Styles.black6);
 
-            var list = unit == null ? Vars.content.unitCommands().copy() : unit().commands;
+            UnitCommand[] commands = new UnitCommand[]{
+                UnitCommand.moveCommand, UnitCommand.repairCommand, UnitCommand.rebuildCommand, UnitCommand.assistCommand, UnitCommand.mineCommand,
+                UnitCommand.enterPayloadCommand, UnitCommand.loadUnitsCommand, UnitCommand.loadBlocksCommand, UnitCommand.unloadPayloadCommand, UnitCommand.loopPayloadCommand
+            };
+            Seq<UnitCommand> list = new Seq<>();
+            list.add(commands);
             for(var item : list){
                 ImageButton button = table.button(item.getIcon(), Styles.clearNoneTogglei, 44f, () -> {
                     configure(item);
