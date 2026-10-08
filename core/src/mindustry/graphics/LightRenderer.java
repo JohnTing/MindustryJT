@@ -184,11 +184,11 @@ public class LightRenderer{
     }
 
     public boolean enabled(){
-        return state.rules.lighting && state.rules.ambientLight.a > 0.0001f && renderer.drawLight;
+        return !Vars.headless && !mindustry.CustomClientLogic.hiddenRender() && state.rules.lighting && state.rules.ambientLight.a > 0.0001f && renderer.drawLight;
     }
 
     public void draw(){
-        if(!Vars.enableLight){
+        if(!Vars.enableLight || mindustry.CustomClientLogic.hiddenRender()){
             lights.clear();
             circleIndex = 0;
             return;

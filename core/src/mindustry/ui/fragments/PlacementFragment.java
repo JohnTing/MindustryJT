@@ -46,6 +46,10 @@ public class PlacementFragment{
     ObjectFloatMap<Category> scrollPositions = new ObjectFloatMap<>();
     @Nullable Block menuHoverBlock;
     @Nullable Displayable hover;
+    @Nullable Displayable hoverUnit;
+    @Nullable Building hoverBuilding;
+    @Nullable Tile hoverTile;
+
     @Nullable Building lastFlowBuild, nextFlowBuild;
     @Nullable Object lastDisplayState;
     @Nullable Team lastTeam;
@@ -356,8 +360,8 @@ public class PlacementFragment{
 
                         //don't refresh unnecessarily
                         //refresh only when the hover state changes, or the displayed block changes
-                        if(wasHovered == isHovered && lastDisplayState == displayState && lastTeam == player.team()) return;
-
+                        // if(wasHovered == isHovered && lastDisplayState == displayState && lastTeam == player.team()) return;
+                        if(wasHovered == isHovered && lastDisplayState == displayState) return;
                         topTable.clear();
                         topTable.top().left().margin(5);
 
@@ -432,7 +436,43 @@ public class PlacementFragment{
 
                         }else if(hovered != null){
                             //show hovered item, whatever that may be
-                            hovered.display(topTable);
+                            // hovered.display(topTable);
+                            if(hoverUnit != null) {
+                                hoverUnit.display(topTable);
+                            }
+                            if(hoverBuilding != null) {
+                                topTable.row();
+                                hoverBuilding.display(topTable);
+                            }
+                            if(hoverTile != null) {
+                                topTable.row();
+                                
+                                if(hoverBuilding == null && hoverTile.block() != null && !hoverTile.block().isAir()) {
+                                    Block toDisplay = hoverTile.block();
+                                    topTable.table(t -> {
+                                        t.left();
+                                        t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
+                                        t.labelWrap(toDisplay.localizedName).left().width(100f).padLeft(5);
+                                    }).growX().left();
+                                }
+                                if(hoverTile.overlay() != null && !hoverTile.overlay().isAir()) {
+                                    Block toDisplay = hoverTile.overlay();
+                                    topTable.table(t -> {
+                                        t.left();
+                                        t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
+                                        t.labelWrap(toDisplay.localizedName).left().width(100f).padLeft(5);
+                                    }).growX().left();
+                                }
+                                else if(hoverTile.floor() != null && !hoverTile.floor().isAir()) {
+                                    Block toDisplay = hoverTile.floor();
+                                    topTable.table(t -> {
+                                        t.left();
+                                        t.add(new Image(toDisplay.uiIcon)).scaling(Scaling.fit).size(8 * 4);
+                                        t.labelWrap(toDisplay.localizedName).left().width(100f).padLeft(5);
+                                    }).growX().left();
+                                }
+
+                            }
                         }
                     });
                 }).colspan(3).fillX().visible(this::hasInfoBox).touchable(Touchable.enabled).row();
@@ -789,29 +829,50 @@ public class PlacementFragment{
     /** @return the thing being hovered over. */
     public @Nullable Displayable hovered(){
         Vec2 v = topTable.stageToLocalCoordinates(Core.input.mouse());
-
+        Displayable result = null;
         //if the mouse intersects the table or the UI has the mouse, no hovering can occur
         if(Core.scene.hasMouse(Core.input.mouseX(), Core.input.mouseY()) || topTable.hit(v.x, v.y, false) != null) return null;
 
         //check for a unit
         Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
+        if(unit == null) {
+            unit = Units.closestOverlap(null, Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
+        }
+        this.hoverUnit = unit;
+
         //if cursor has a unit, display it
-        if(unit != null) return unit;
+        if(result == null) {
+            result = unit;
+        }
 
         //check tile being hovered over
         Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
         if(hoverTile != null && hoverTile.inMapArea()){
             //if the tile has a building, display it
+
             if(hoverTile.build != null && hoverTile.build.displayable() && !hoverTile.build.inFogTo(player.team()) && hoverTile.build.inMapArea()){
-                return nextFlowBuild = hoverTile.build;
+                nextFlowBuild = hoverTile.build;
+                this.hoverBuilding = nextFlowBuild;
+                if(result == null) {
+                    result = nextFlowBuild;
+                }
+            } else {
+                this.hoverBuilding = null;
             }
-
+            /*
             //if the tile has a drop, display the drop
-            if(hoverTile.displayable()){
-                return hoverTile;
-            }
+            // if((hoverTile.drop() != null && hoverTile.block() == Blocks.air) || hoverTile.wallDrop() != null || hoverTile.floor().liquidDrop != null){
+            if((hoverTile.drop() != null) || hoverTile.wallDrop() != null || hoverTile.floor().liquidDrop != null){
+                 if(result == null) {
+                    result = hoverTile;
+                }
+            } else {
+                this.hoverTile = null;
+            }*/
         }
+        this.hoverTile = hoverTile; 
+        result = hoverTile;
 
-        return null;
+        return result;
     }
 }

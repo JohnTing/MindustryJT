@@ -102,6 +102,8 @@ public final class FogControl implements CustomChunk{
     }
 
     public boolean isDiscovered(Team team, int x, int y){
+        //hidden mode ignores static (tower-only) fog of war entirely
+        if(mindustry.CustomClientLogic.hiddenRenderIgnoreFog()) return true;
         if(!state.rules.staticFog || !state.rules.fog || team == null || team.isAI()) return true;
 
         var data = getDiscovered(team);
@@ -115,6 +117,8 @@ public final class FogControl implements CustomChunk{
     }
 
     public boolean isVisibleTile(Team team, int x, int y){
+        //hidden mode ignores fog of war entirely (covers dynamic visibility and any entity not overriding inFogTo)
+        if(mindustry.CustomClientLogic.hiddenRenderIgnoreFog()) return true;
         if(!state.rules.fog|| team == null || team.isAI()) return true;
 
         var data = data(team);

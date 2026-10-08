@@ -1,0 +1,101 @@
+name: Build Artifacts
+
+on:
+  push:
+    branches:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # --- 新增權限設定 ---
+    permissions:
+      contents: write
+    # ------------------
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 17
+      uses: actions/setup-java@v1
+      with:
+        java-version: 17
+
+    - name: Extract Version, Tag Name, and Timestamp
+      id: extract_vars
+      run: |
+        BRANCH_NAME="${{ github.ref_name }}"
+        VERSION=$(echo "$BRANCH_NAME" | sed -E 's/^v([0-9.]+).*/\1/')
+        TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+        UNIQUE_TAG="${BRANCH_NAME}-${TIMESTAMP}"
+        echo "RELEASE_VERSION=$VERSION"
+        echo "RELEASE_TAG=$UNIQUE_TAG"
+        echo "RELEASE_VERSION=$VERSION" >> $GITHUB_ENV
+        echo "RELEASE_TAG=$UNIQUE_TAG" >> $GITHUB_ENV
+
+    # - name: Set env
+    #   run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Set up keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" > keystore.txt
+        base64 --decode keystore.txt > bekeystore.jks
+    - name: Fetch JRE for Steam deployment
+      run: |
+        echo $HOME
+        mkdir ~/jdks
+        cd ~/jdks
+        wget https://github.com/Anuken/MindustryJreBuilds/releases/download/v3/jre-linux64.zip
+        wget https://github.com/Anuken/MindustryJreBuilds/releases/download/v3/jre-windows64.zip
+        wget https://github.com/Anuken/MindustryJreBuilds/releases/download/v3/jre-macos.zip
+        wget https://github.com/Anuken/MindustryJreBuilds/releases/download/v1/packr.jar
+        unzip jre-linux64.zip
+        unzip jre-windows64.zip
+        unzip jre-macos.zip
+        ls
+    - name: Create artifacts
+      env:
+        keystore_password: ${{ secrets.KEYSTORE_PASSWORD }}
+        keystore_alias: ${{ secrets.KEYSTORE_ALIAS }}
+        keystore_alias_password: ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
+        JDK_DIR: /home/runner/jdks/
+      run: |
+        git clone --depth=1 --branch=master https://github.com/Anuken/Arc
+        # git clone --depth=1 --branch=master https://github.com/Anuken/Mindustry
+        # cd Mindustry
+
+        git clone https://github.com/${{ github.repository }} ./Mindustry
+        cd Mindustry
+        git checkout ${{ github.sha }}
+
+
+
+        #echo "BODY=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        #sed -i 's/applicationId "io.anuke.mindustry"/applicationId "io.anuke.mindustry.be"/g' android/build.gradle
+        #sed -i 's/"io.anuke.mindustry"/"io.anuke.mindustry.be"/g' android/AndroidManifest.xml
+        #sed -i 's/Mindustry/Mindustry BE/g' android/res/values/strings.xml
+        
+        ./gradlew pack
+        ./gradlew desktop:dist server:dist core:depsJar android:assembleRelease -Pbuildversion=${RELEASE_VERSION}  --stacktrace
+        
+        cp desktop/build/libs/Mindustry.jar desktop/build/libs/Mindustry-BE-Desktop-${RELEASE_VERSION}.jar
+        cp server/build/libs/server-release.jar server/build/libs/Mindustry-BE-Server-${RELEASE_VERSION}.jar
+        cp android/build/outputs/apk/release/android-release.apk android/build/outputs/apk/release/Mindustry-BE-Android-${RELEASE_VERSION}.apk
+        echo "JDK directory: $JDK_DIR"
+        # ./gradlew desktop:dist -Pbuildversion=${RELEASE_VERSION} -Prelease -PversionModifier=steam  desktop:packrLinux64 desktop:packrWindows64 desktop:packrMacOS --stacktrace
+        echo $PWD
+        # ls deploy/
+    
+    # ==========================================
+    # 發布流程 (保留 JT 版的發布邏輯)
+    # ==========================================
+    - name: Create Release and Upload All Artifacts
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.RELEASE_TAG }}
+        name: Release ${{ env.RELEASE_TAG }}
+        target_commitish: ${{ github.sha }}
+        prerelease: true
+        files: |
+          Mindustry/desktop/build/libs/*.jar
+          Mindustry/server/build/libs/server-release.jar
+          Mindustry/android/build/outputs/apk/release/android-release.apk

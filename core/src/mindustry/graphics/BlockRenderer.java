@@ -65,6 +65,7 @@ public class BlockRenderer{
 
     private CacheChunk[][] cacheChunks;
     private CacheBatch cbatch = new CacheBatch(null);
+    private boolean lastFogBypass;
 
     private Seq<SpriteCache>[] caches = new Seq[BuildingCacheLayer.amount];
     private Seq<IntSeq>[] queuedCacheDraws = new Seq[BuildingCacheLayer.amount];
@@ -536,8 +537,27 @@ public class BlockRenderer{
         }
 
 
-        if(avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey && lastTeam == player.team()){
+        boolean fogBypass = mindustry.CustomClientLogic.hiddenRenderIgnoreFog();
+        boolean fogBypassToggled = fogBypass != lastFogBypass;
+        lastFogBypass = fogBypass;
+
+        if(avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey && lastTeam == player.team() && !fogBypassToggled){
             return;
+        }
+
+        if(fogBypassToggled && cacheChunks != null){
+            for(int cx = 0; cx < cacheChunks.length; cx++){
+                CacheChunk[] row = cacheChunks[cx];
+                if(row == null) continue;
+                for(int cy = 0; cy < row.length; cy++){
+                    CacheChunk chunk = row[cy];
+                    if(chunk != null){
+                        for(int i = 0; i < BuildingCacheLayer.amount; i++){
+                            chunk.dirty[i] = true;
+                        }
+                    }
+                }
+            }
         }
 
         chunksToDraw.clear();

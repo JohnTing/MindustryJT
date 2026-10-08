@@ -106,7 +106,8 @@ public class Binding{
     chatMode = KeyBind.add("chat_mode", KeyCode.tab),
     console = KeyBind.add("console", KeyCode.f8),
     debugHitboxes = KeyBind.add("debug_hitboxes", KeyCode.unset),
-    performanceMetrics = KeyBind.add("performance_metrics", KeyCode.unset)
+    performanceMetrics = KeyBind.add("performance_metrics", KeyCode.unset),
+    toggleHiddenRender =  KeyBind.add("toggleHiddenRender", KeyCode.space)
     ;
 
     //dummy static class initializer

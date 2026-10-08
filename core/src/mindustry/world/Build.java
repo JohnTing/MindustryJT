@@ -26,13 +26,17 @@ public class Build{
         if(!validBreak(team, x, y)){
             return;
         }
-
+        mindustry.CustomClientLogic.handlebeginBreakEvent(unit, team, x, y);
         Tile tile = world.tileBuilding(x, y);
         //this should never happen, but it doesn't hurt to check for links
         float prevPercent = 1f;
 
         if(tile.build != null){
             prevPercent = tile.build.healthf();
+        }
+
+        if(unit != null && unit.getControllerName() != null && tile.build != null){
+            tile.build.lastBreak = unit.getControllerName();
         }
 
         int rotation = tile.build != null ? tile.build.rotation : 0;
@@ -77,6 +81,10 @@ public class Build{
 
         //just in case
         if(tile == null) return;
+
+        if(unit != null && unit.getControllerName() != null && tile.build != null){
+            tile.build.lastPlace = unit.getControllerName();
+        }
 
         //auto-rotate the block to the correct orientation and bail out
         if(tile.team() == team && tile.block == result && tile.build != null && tile.block.quickRotate){
